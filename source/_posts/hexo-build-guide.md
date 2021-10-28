@@ -1,13 +1,11 @@
 ---
 title: 使用Hexo构建博客
-date: 2021-10-28 14:53:12
+date: 2018-10-28 14:53:12
 tags: hexo
 categories: 
 ---
 
-一直以来，使用其他工具来记录技术知识的积累，以后陆续将其转到github上。使用Hexo搭建项目可以自动将文档生成静态HTML等文件，上传到github上，随时通过yourname.github.io查看自己的公开静态信息库。
-
-# 构建指南
+一直以来，使用其他工具来记录技术知识的积累，以后陆续将其转到github上。使用Hexo搭建项目可以自动将文档生成静态HTML等文件，上传到github上，随时通过your-github-name.github.io查看自己的公开静态信息库。
 
 ## Github准备操作
 
@@ -84,7 +82,7 @@ categories:
 
 10. 通过`hexo clean`&`hexo generate`&`hexo deploy`三个命令组合完成, 实际上每次修改之后都是这一顿操作.
 
-### 主题等相关配置操作
+## 主题等相关配置操作
 
 1. 选用`Next`主题, 然后对`theme/next`中的配置文件进行相关设置, 这里参考网友们的答案即可, 主要是对首页、归档、分类、标签、关于进行相关设置和注释放开, 并通过命令增加对应的模块
 
@@ -106,7 +104,7 @@ categories:
 
    - 然后, 在主题配置文件`theme/next/.config.yml`中设置`local_search: enable: true`
 
-### 日常操作
+## 日常操作
 
 1. 写博客`hexo new post [new-blog-name]`, 在`source/_post/`下就生成了一个新的博客文件, 可以用其他markdown编辑工具来编写, 比如Typora
 2. 在博客文档的开头可以设置标签和分类
