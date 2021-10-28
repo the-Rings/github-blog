@@ -5,11 +5,11 @@
 # Site
 title: 长天逸夫
 subtitle: And you run, cause Life is too short.
-description: ''
+description: 日积月累
 keywords:
 author: The Rings
-language: zh-Hans
-timezone: ''
+language: zh-CN
+timezone: Asia/Shanghai
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
@@ -98,6 +98,11 @@ ignore:
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: next
+search:
+  path: search.xml
+  field: post
+  format: html
+  limit: 10000
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
