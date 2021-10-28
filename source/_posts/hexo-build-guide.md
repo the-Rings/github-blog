@@ -1,8 +1,7 @@
 ---
 title: 使用Hexo构建博客
 date: 2021-10-28 14:53:12
-tags: 
-- hexo
+tags: hexo
 categories: 
 ---
 
@@ -24,11 +23,11 @@ categories:
 
    - 在Windows默认的用户目录下, 新建`C:\Users\your-user-name\.npmrc`文件
 
-     - ```javascript
+     ```
        registry=https://registry.npm.taobao.org
        prefix=D:\apps\nodejs\node_global
        cache=D:\apps\nodejs\node_cache
-       ```
+    ```
 
 3. 安装`npm install -g hexo`
 
@@ -48,7 +47,7 @@ categories:
 
 7. 整个项目初始化为git项目, 并添加`.gitignore`文件
 
-   - ```gitignore
+    ```
      .DS_Store
      Thumbs.db
      db.json
@@ -56,7 +55,7 @@ categories:
      node_modules/
      public/
      .deploy*/
-     ```
+    ```
 
    - > 通过此gitignore文件可以看出向`[github-blog]`repository推送的包括源文档, 主题文件和配置文件
 
@@ -66,22 +65,20 @@ categories:
      # for example: $ git remote add origin git@github.com:the-Rings/github-blog.git
      # github从2020年12月份之后, 不再支持用户名&密码方式推送项目, 所以这里是ssh address, 配合我们之前加入的SSH keys使用
      git add .
-     git 
+     git commit -m "something"
      git push --set-upstream main
      # 推送完成
      ```
 
 8. 配置`_config.yml`向`[your-github-name].github.io`仓库推送public下的文件, 这是不需要初始化git仓库, 使用hexo相关工具完成
 
-   - ```yaml
-     # 编辑_config.yml中的deploy选项
-     deploy:
-       type: git
-       repo: git@github.com:[your-github-name]/[your-github-name].github.io.git # 复制仓库的SSH地址
-       branch: main # 分支默认为main即可
-     ```
-
-   - 
+    ```yaml
+    # 编辑_config.yml中的deploy选项
+    deploy:
+      type: git
+      repo: git@github.com:[your-github-name]/[your-github-name].github.io.git # 复制仓库的SSH地址
+      branch: main # 分支默认为main即可
+    ```
 
 9. 安装`npm install hexo-deployer-git --save`, 这个工具来向github推送静态文件
 
@@ -91,21 +88,21 @@ categories:
 
 1. 选用`Next`主题, 然后对`theme/next`中的配置文件进行相关设置, 这里参考网友们的答案即可, 主要是对首页、归档、分类、标签、关于进行相关设置和注释放开, 并通过命令增加对应的模块
 
-   - ```shell
+   ```shell
      hexo new page categories
      hexo new page tags
      hexo new page about
-     ```
+   ```
 
 2. 启用搜索功能, 在项目的根目录下`_config.yml`找到`Extensions`, 增加配置, 并执行`$ npm install hexo-generator-searchdb --save`
 
-   - ```yaml
+    ```yaml
      search:
        path: search.xml
        field: post
        format: html
        limit: 10000
-     ```
+    ```
 
    - 然后, 在主题配置文件`theme/next/.config.yml`中设置`local_search: enable: true`
 
