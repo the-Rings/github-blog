@@ -43,7 +43,7 @@ IoC中文被翻译为"控制反转", 一直都让我一头雾水, 软件工程�
 
 Spring的IoC容器是一个IoC Service Provider, 提供了两种类型的支持: BeanFactory和ApplicationContext. 其中ApplicationContext基于BeanFactory, 提供了事件发布等功能.
 
-Spring提倡使用POJO, 每个业务对象看做是一个JavaBean. 只有纳入Spring管理的这些类才能看做是业务对象, 如何纳入Spring管理, 就是这些类上有@Configuration, @Component, @Service等注解. 要是定义了一个普通的类, 那么这并不能归IoC容器管辖.
+Spring提倡使用POJO, 每个业务对象看做是一个JavaBean. 只有纳入Spring管理的这些类才能看做是业务对象, 如何纳入Spring管理, 就是这些类上有@Configuratio`n`, @Componen`t`, @Service等注`解`. 要是定义了一个普通的类, 那么这并不能归IoC容器管辖.
 
 很久以前, 我们基本上都使用XML进行依赖关系的记录, 通过XML很好的给我们展现了, 依赖的树形关系, 先完成类的声明, 然后对应编写XML, 比如: 
 ```xml
@@ -114,7 +114,7 @@ public class Foo {
     }
 }
 ```
-如果以上类Foo是由我们自定义的, 我们可以在其上@Component或者@Service纳入Spring IoC容器管理, 让容器帮我们解除接口和实现类之间的耦合性. 但是, 如果BarInterface来自于第三方库, 接口与实现类的耦合性需要其他方式来避免. 这是我们可以写一个工厂方法(Factory Method), 提供一个工厂类来实例化具体接口实现类. Foo类只需要依赖于工厂类, 当实现类有变更的时候, 只是变更工厂类, Foo类代码不需要做出任何变动.
+如果以上类Foo是由我们自定义的, 我们可以在其上`@Component`或者`@Service`纳入Spring IoC容器管理, 让容器帮我们解除接口和实现类之间的耦合性. 但是, 如果BarInterface来自于第三方库, 接口与实现类的耦合性需要其他方式来避免. 这是我们可以写一个工厂方法(Factory Method), 提供一个工厂类来实例化具体接口实现类. Foo类只需要依赖于工厂类, 当实现类有变更的时候, 只是变更工厂类, Foo类代码不需要做出任何变动.
 ```java
 public class Foo {
     private BarInterface barInterface;
@@ -333,19 +333,19 @@ public interface InitializingBean {
 }
 ```
 InitializingBean的作用在于, 对象实例化调用过"BeanPostProcessor的前置处理"方法之后, 会接着检测对象是否实现了InitializingBean接口, 如果是, 就会调用afterPropertiesSet()方法进一步调整对象实例的状态. 
-但是, 以上操作显得Spring容器比较具有侵入性, 那么Spring还提供了另一种方式, 那就是在XML的<bean>标签中配置init-method, 可以认为在InitializingBean和init-method中任选其一帮助你完成类似的初始化工作.
-> 到这里我不仅感叹, 这篇博客是我对<<Spring揭秘>>的读书和实践的笔记, 可能大部分书籍的文字都来源于对Spring源码中注释的解读.
+但是, 以上操作显得Spring容器比较具有侵入性, 那么Spring还提供了另一种方式, 那就是在XML的`<bean>`标签中配置init-method, 可以认为在InitializingBean和init-method中任选其一帮助你完成类似的初始化工作.
+> 到这里我不仅感叹, 这篇博客是我对《Spring揭秘》的读书和实践的笔记, 可能大部分书籍的文字都来源于对Spring源码中注释的解读.
 
 #### DisposableBean与destroy-method
-同样地, 当所有的一切, 该设置的设置, 该注入的注入, 该调用的调用完成之后, 容器会检查singleton类型的bean实例, 是否实现了DisposableBean接口. 或者对应的bean在<bean>里定义了destory-method. 是的话, 就会为该实例注册一个用于对象销毁的回调(Callback), 以便这些singleton类型的对象实例销毁之前, 执行销毁逻辑.
+同样地, 当所有的一切, 该设置的设置, 该注入的注入, 该调用的调用完成之后, 容器会检查singleton类型的bean实例, 是否实现了DisposableBean接口. 或者对应的bean在`<bean>`里定义了destory-method. 是的话, 就会为该实例注册一个用于对象销毁的回调(Callback), 以便这些singleton类型的对象实例销毁之前, 执行销毁逻辑.
 > 容器不会去管理, scope为prototype类型的bean实例.
 
 
 ## 使用注解代替XML
 在XML配置成功的基础上, 引入了注解来减少冗余操作.
-@Autowired四基于注解的依赖注入的核心注解. 它们都是触发容器对相应对象给与依赖注入的标志. @Autowired是按照类型匹配进行依赖注入的. 现在, 容器的配置文件就只剩下一个个孤零零的bean定义了.
+`@Autowired`四基于注解的依赖注入的核心注解. 它们都是触发容器对相应对象给与依赖注入的标志. `@Autowired`是按照类型匹配进行依赖注入的. 现在, 容器的配置文件就只剩下一个个孤零零的bean定义了.
 
-有了注解必须得有Annotation Processor, 要不然注解和注释没什么区别, Spring提供了AutowiredAnnotationBeanPostProcessor来得到这一目的. 通过反射检查每个bean定义对应的类上的各种可能位置上的@Autowired. 存在, 就从当前容器管理的对象中获取符合条件的对象, 设置给@Autowired锁标注的属性或方法. 伪代码如下: 
+有了注解必须得有Annotation Processor, 要不然注解和注释没什么区别, Spring提供了AutowiredAnnotationBeanPostProcessor来得到这一目的. 通过反射检查每个bean定义对应的类上的各种可能位置上的`@Autowired`. 存在, 就从当前容器管理的对象中获取符合条件的对象, 设置给`@Autowired`锁标注的属性或方法. 伪代码如下: 
 ```java
 Object[] beans = ...;
 for (Objec bean: beans) {
@@ -361,12 +361,12 @@ for (Objec bean: beans) {
 }
 ```
 
-如果当前的@Autowired标注的依赖在容器中找到了两个以上的实例的话, 就需要@Qualifier的配合, 出入自定义的name(String)条件作出进一步限定. @Qualifier实际上是byName自动绑定的注解版.
+如果当前的`@Autowired`标注的依赖在容器中找到了两个以上的实例的话, 就需要@Qualifier的配合, 出入自定义的name(String)条件作出进一步限定. `@Qualifier`实际上是byName自动绑定的注解版.
 
 #### classpath-scanning
 到目前为止, 我们已经通过注解将依赖关系xml定义转移到了源码中. 为了"一套代码, 一处定义"的理念, 要将革命进行彻底. classpath-scanning的诞生!
-使用相应的注解(@Component, @Service, @Configuration)进行标注之后, classpath-scanning功能从某一顶层包(base package)开始扫描, 当扫描到相应的注解之后, 就会提取该类的信息, 构建对应的BeanDefinition, 然后把构建完成的BeanDefinition注册到容器. 
-classpath-scanning由<context:component-scan>决定. <context:component-scan>默认扫描的注解时@Component. 其中, 在@Component语义的基础上细化后又有了@Repository/@Service@Controller, 他们同样都会被扫描. @Component的语义更宽泛, 而@Service以及@Repository等更具体. 另外, 对于服务层类定义来说, 使用@Service标注它, 比@Component更加确切.
+使用相应的注解(`@Component`, `@Service`, `@Configuration`)进行标注之后, classpath-scanning功能从某一顶层包(base package)开始扫描, 当扫描到相应的注解之后, 就会提取该类的信息, 构建对应的BeanDefinition, 然后把构建完成的BeanDefinition注册到容器. 
+classpath-scanning由`<context:component-scan>`决定. `<context:component-scan>`默认扫描的注解时@Componen`t`. 其中, 在@Component语义的基础上细化后又有`了`@Repositor`y`/@Servic`e`@Controlle`r`, 他们同样都会被扫描. @Component的语义更宽`泛`, 而@Service以`及`@Repository等更具`体`. 另外, 对于服务层类定义来说, 使用@Service标注`它`, 比@Component更加确`切`.
 
 
 学习Spring框架, 是不是要抓住Spring中几个大的接口来进行, 比如BeanFactory, BeanPostProcessor等, 毕竟是面向接口的编程. 
