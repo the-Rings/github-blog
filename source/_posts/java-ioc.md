@@ -2,8 +2,8 @@
 title: Spring IoC基础
 date: 2019-01-28 15:08:10
 tags: 
-- java
-- ioc
+- Spring
+- IoC
 ---
 
 为了方便, 通篇的例子都采用这个模型, 订单, 订单产品, 订单地址的关系, 订单需要依赖订单地址和产品等信息. 一般需要在构造函数中构造Order
@@ -43,7 +43,7 @@ IoC中文被翻译为"控制反转", 一直都让我一头雾水, 软件工程�
 
 Spring的IoC容器是一个IoC Service Provider, 提供了两种类型的支持: BeanFactory和ApplicationContext. 其中ApplicationContext基于BeanFactory, 提供了事件发布等功能.
 
-Spring提倡使用POJO, 每个业务对象看做是一个JavaBean. 只有纳入Spring管理的这些类才能看做是业务对象, 如何纳入Spring管理, 就是这些类上有@Configuratio`n`, @Componen`t`, @Service等注`解`. 要是定义了一个普通的类, 那么这并不能归IoC容器管辖.
+Spring提倡使用POJO, 每个业务对象看做是一个JavaBean. 只有纳入Spring管理的这些类才能看做是业务对象, 如何纳入Spring管理, 就是这些类上有`@Configuration`, `@Component`, `@Service`等注解. 要是定义了一个普通的类, 那么这并不能归IoC容器管辖.
 
 很久以前, 我们基本上都使用XML进行依赖关系的记录, 通过XML很好的给我们展现了, 依赖的树形关系, 先完成类的声明, 然后对应编写XML, 比如: 
 ```xml
@@ -366,7 +366,7 @@ for (Objec bean: beans) {
 #### classpath-scanning
 到目前为止, 我们已经通过注解将依赖关系xml定义转移到了源码中. 为了"一套代码, 一处定义"的理念, 要将革命进行彻底. classpath-scanning的诞生!
 使用相应的注解(`@Component`, `@Service`, `@Configuration`)进行标注之后, classpath-scanning功能从某一顶层包(base package)开始扫描, 当扫描到相应的注解之后, 就会提取该类的信息, 构建对应的BeanDefinition, 然后把构建完成的BeanDefinition注册到容器. 
-classpath-scanning由`<context:component-scan>`决定. `<context:component-scan>`默认扫描的注解时@Componen`t`. 其中, 在@Component语义的基础上细化后又有`了`@Repositor`y`/@Servic`e`@Controlle`r`, 他们同样都会被扫描. @Component的语义更宽`泛`, 而@Service以`及`@Repository等更具`体`. 另外, 对于服务层类定义来说, 使用@Service标注`它`, 比@Component更加确`切`.
+classpath-scanning由`<context:component-scan>`决定. `<context:component-scan>`默认扫描的注解时`@Component`. 其中, 在@Component语义的基础上细化后又有了`@Repository`, `@Service`/`@Controller`, 他们同样都会被扫描. `@Component`的语义更宽泛, 而`@Service`以及`@Repository`等更具体. 另外, 对于服务层类定义来说, 使用`@Service`标注它, 比`@Component`更加确切.
 
 
 学习Spring框架, 是不是要抓住Spring中几个大的接口来进行, 比如BeanFactory, BeanPostProcessor等, 毕竟是面向接口的编程. 
