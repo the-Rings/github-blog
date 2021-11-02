@@ -249,20 +249,27 @@ public class Proxy implements java.io.Serializable {
 ```
 > 其中这个newProxyInstance方法要注重说一下，大概分为四步：
  - 第一步，先进行权限检测`checkProxyAccess`，主要是借助于`System.getSecurityManager().checkxxxPermission(...)`，其中权限主要涉及：文件，socket等
- - 第二步，生产代理对象, `getProxyClass0(loader, intfs)`根据传入`newProxyInstance(...)`的参数得到一个代理对象，其中传入的参数有三个, 根据前两个参数到proxyClassCache中查找是否有缓存，如果没有，根据`ProxyClassFactory`生产出一个代理对象，`ProxyClassFactory`是一个静态内部类, 其中代理对象的生成过程，主要涉及`apply(..)`中的`ProxyGenerator.generateProxyClass(proxyName...)`行(以下附上了`ProxyGenerator`的部分源码)，当我打开`generateProxyClass`方法的源码才恍然大悟，这里直接写入了一个.class文件，来定义代理类，原来Java的动态不过如此。
+ - 第二步，生产代理对象, `getProxyClass0(loader, intfs)`根据传入`newProxyInstance(...)`的参数得到一个代理对象，其中传入的参数有三个, 根据前两个参数到proxyClassCache中查找是否有缓存，如果没有，根据`ProxyClassFactory`生产出一个代理对象，`ProxyClassFactory`是一个静态内部类, 其中代理对象的生成过程，主要涉及`apply(..)`中的`ProxyGenerator.generateProxyClass(proxyName...)`行(以下附上了`ProxyGenerator`的部分源码)，当我打开`generateProxyClass`方法的源码才恍然大悟，`generateClassFile()`在内存中生成一个class类(文件一般不保存, 类名一般叫做`$Proxy0`)，来定义代理类，原来Java的动态不过如此。
  ```Java
 public class ProxyGenerator {
     // ...
     public static byte[] generateProxyClass(final String var0, Class<?>[] var1, int var2) {
         ProxyGenerator var3 = new ProxyGenerator(var0, var1, var2);
         final byte[] var4 = var3.generateClassFile();
-        // ...
+        if (saveGeneratedFiles) {
+            // ...
+            // 生成一个简单的代理对象, 一般不需要进行.class的保存, 所以这里的`saveGeneratedFiles`为false
+        }
+        
         return var4;
     }
 }
 ```
  - 第三步，根据第二步生成的代理类，调用`cl.getConstructor({ InvocationHandler.class })`, 相当于调用了代理类的构造方法, 在通过构造器调用`cons.newInstance(new RequestCtrlInvocationHandler(new ISubjectImpl()))`，最终强制转换ISubject对象。
  - 第四步，当代理对象调用`ISubject`的`request`时，首先进入`RequestCtrlInvocationHandler`的invoke方法，在该方法的最后，通过method.invoke(...)来真正调用`ISubjectImpl.request`
+
+ 问题1: 代理为什么需要实现某个接口, 继承某个类, 不可以代理吗?
+ 答: 代理描述的场景是代理目标类所有的方法, 如果目标类只是继承的话, 它并不一定重写了所有的方法, 所以有些方法没办法代理. 如果要对没有实现任何接口的类, 可以使用CGLIB, 为目标类生成一个子类, 就可以通过子类调用父类的方法, 并在方法的前后加上pre-process或者post-process
 
 
 
