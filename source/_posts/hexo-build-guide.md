@@ -104,7 +104,50 @@ categories:
 
    - 然后, 在主题配置文件`theme/next/.config.yml`中设置`local_search: enable: true`
 
-## 日常操作
+3. 增加流程图插件, 在markdown文档中画出流程图
+    ```shell
+    npm install --save hexo-filter-flowchart
+    ```
+    语法参考: http://flowchart.js.org/
+
+    ```flow
+    st=>start: 开始语句
+    in=>inputoutput: 输入值
+    e=>end: 结束语句
+    op=>operation: 执行操作
+    cond=>condition: 是否成立？
+    out=>inputoutput: 输出值
+    
+    st->in->op->cond
+    cond(yes)->out
+    cond(no)->op
+    out->e
+    ```
+
+4. UML图插件
+    ```shell
+    npm install --save hexo-tag-plantuml
+    ```
+    语法参考: https://plantuml.com/zh/class-diagram
+    预览效果: https://www.plantuml.com/plantuml/uml/SyfFKj2rKt3CoKnELR1Io4ZDoSa70000
+    {% plantuml %}
+    Joinpoint <|-- Invocation
+    interface Joinpoint {}
+    interface Invocation {}
+    
+    Invocation <|-- MethodInvocation
+    interface MethodInvocation {}
+    
+    MethodInvocation <|-- ProxyMethodInvocation
+    interface ProxyMethodInvocation {}
+    
+    ProxyMethodInvocation <|.. ReflectiveMethodInvocation
+    {% endplantuml %}
+
+## 特殊语法
+1. 站内文章链接{% post_link file_name "display name" %}
+
+## 日常操作流程
 
 1. 写博客`hexo new post [new-blog-name]`, 在`source/_post/`下就生成了一个新的博客文件, 可以用其他markdown编辑工具来编写, 比如Typora
 2. 在博客文档的开头可以设置标签和分类

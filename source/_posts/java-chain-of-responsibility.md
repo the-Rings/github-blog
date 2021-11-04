@@ -1,5 +1,5 @@
 ---
-title: java-chain-of-responsibility
+title: 责任链模式
 date: 2021-11-02 20:31:25
 tags:
 - java
@@ -10,10 +10,19 @@ tags:
 
 # 责任链模式
 用这样一段OnJava8的原文来描述责任链模式
-> *In recursion, one method calls itself over and over until it reaches a termination condition; with **Chain of Responsibility**, a method calls the same base-class method (with a different implementation) which calls another implementation of the base-class method, etc., until it reaches a termination condition.*
+
+{% blockquote Bruce Eckel, On Java 8 %}
+In recursion, one method calls itself over and over until it reaches a termination condition; with **Chain of Responsibility**, a method calls the same base-class method (with a different implementation) which calls another implementation of the base-class method, etc., until it reaches a termination condition.
+{% endblockquote %}
 
 从中体会到几点: Java中使用递归调用来执行整个链条, 链条是一个List, 这个List中保存着每个子类重写父类的同一个方法, 但是它们实现逻辑不同. 
 
+
+在Spring AOP中, 对于某个Joinpoint. 要加入一个横切逻辑, 需要定义一个类实现MethodInterceptor, 重写其invoke方法, 在invoke方法体中添加横切逻辑. 其方法体中必须调用`invocation.proceed()`方法, 不然会造成"短路". 
+
+有多个MethodInterceptor实现的时候, 要按照逐个执行它们的invoke方法(横切逻辑), 这些匹配到的interceptor, 最终集中到了`ReflectiveMethodInvocation.interceptorsAndDynamicMethodMatchers`这个List中, 将在`proceed()`方法中执行. 这里用到了递归, 整体是"责任链模式"
+
+附上ReflectiveMethodInvocation源码来解释
 
 ```java
 
@@ -193,34 +202,70 @@ public class ReflectiveMethodInvocation implements ProxyMethodInvocation, Clonea
 }
 ```
 
-理清楚它们的关系
-> ReflectiveMethodInvocation---实现--->ProxyMethodInvocation---继承--->MethodInvocation---继承--->Invocation---继承--->Joinpoint
+重要的解释信息都在代码的注释中, 这里理清楚它们继承的关系, 可以看出它们是AOP Joinpoint概念实现
+{% plantuml %}
+Joinpoint <|-- Invocation
+interface Joinpoint {}
+interface Invocation {}
+
+Invocation <|-- MethodInvocation
+interface MethodInvocation {}
+
+MethodInvocation <|-- ProxyMethodInvocation
+interface ProxyMethodInvocation {}
+
+ProxyMethodInvocation <|.. ReflectiveMethodInvocation
+{% endplantuml %}
 
 ```java
 package org.aopalliance.intercept;
 
+import java.lang.reflect.AccessibleObject;
+
 /**
- * This interface represents an invocation in the program.
+ * This interface represents a generic runtime joinpoint (in the AOP
+ * terminology).
  *
- * <p>An invocation is a joinpoint and can be intercepted by an
- * interceptor.
+ * <p>A runtime joinpoint is an <i>event</i> that occurs on a static
+ * joinpoint (i.e. a location in a the program). For instance, an
+ * invocation is the runtime joinpoint on a method (static joinpoint).
+ * The static part of a given joinpoint can be generically retrieved
+ * using the {@link #getStaticPart()} method.
+ *
+ * <p>In the context of an interception framework, a runtime joinpoint
+ * is then the reification of an access to an accessible object (a
+ * method, a constructor, a field), i.e. the static part of the
+ * joinpoint. It is passed to the interceptors that are installed on
+ * the static joinpoint.
  *
  * @author Rod Johnson
+ * @see Interceptor
  */
-public interface Invocation extends Joinpoint {
+public interface Joinpoint {
 
 	/**
-	 * Get the arguments as an array object.
-	 * It is possible to change element values within this
-	 * array to change the arguments.
-	 * @return the argument of the invocation
+	 * Proceed to the next interceptor in the chain.
+	 * <p>The implementation and the semantics of this method depends
+	 * on the actual joinpoint type (see the children interfaces).
+	 * @return see the children interfaces' proceed definition
+	 * @throws Throwable if the joinpoint throws an exception
 	 */
-	Object[] getArguments();
+	Object proceed() throws Throwable;
+
+	/**
+	 * Return the object that holds the current joinpoint's static part.
+	 * <p>For instance, the target object for an invocation.
+	 * @return the object (can be null if the accessible object is static)
+	 */
+	Object getThis();
+
+	/**
+	 * Return the static part of this joinpoint.
+	 * <p>The static part is an accessible object on which a chain of
+	 * interceptors are installed.
+	 */
+	AccessibleObject getStaticPart();
 
 }
 ```
-
-在Spring AOP中, 对于某个Joinpoint. 要加入一个横切逻辑, 需要定义一个类实现MethodInterceptor, 重写其invoke方法, 在invoke方法体中添加横切逻辑. 其方法体中必须调用`invocation.proceed()`方法, 不然会造成"短路". 
-
-有多个MethodInterceptor实现的时候, 要按照逐个执行它们的invoke方法(横切逻辑), 这些匹配到的interceptor, 最终集中到了`ReflectiveMethodInvocation.interceptorsAndDynamicMethodMatchers`这个List中, 将在`proceed()`方法中执行. 这里用到了递归, 整体是"责任链模式"
 

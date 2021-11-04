@@ -5,7 +5,7 @@
 # Site
 title: 长天逸夫
 subtitle: And you run, cause Life is too short.
-description: 日积月累
+description: 软件开发一直追求更加高效, 更加已维护甚至更易扩展的方式
 keywords:
 author: The Rings
 language: zh-CN
@@ -103,6 +103,14 @@ search:
   field: post
   format: html
   limit: 10000
+flowchart:
+  # raphael:   # optional, the source url of raphael.js
+  # flowchart: # optional, the source url of flowchart.js
+  # options used for `drawSVG`
+  options: drawSVG
+tag_plantuml:
+	type: static
+
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment

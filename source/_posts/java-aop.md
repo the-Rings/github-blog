@@ -1,12 +1,10 @@
 ---
-title: java-aop
+title: Spring AOP原理
 date: 2021-10-31 19:07:03
 tags:
 - AOP
 - Spring
 ---
-
-软件开发一直追求更加高效, 更加已维护甚至更易扩展的方式.
 
 # AOP概念
 对于系统中普遍的业务关注点, OOP可以很好地对其进行分解并使之模块化, 但是却无法更好地避免类似于系统需求的实现在系统中各处散落这样的问题. 所以, 我们要寻求一种更好的办法在OOP的基础上更上一层楼. 我们可以推翻OOP的概念提出一套全新的思路, 但是也可以在此基础上提供一种补足方案. 后来我们找到了AOP.
@@ -42,8 +40,8 @@ AOP是一种理论, Spring AOP是针对Spring框架落地的一种AOP实现. Spr
          System.out.println("OK");
      }
  }
- public class RequestCtrlCallback implements MethodInterceptor {
-     private static final Log logger = LogFactory.getLog(RequestCtrlCallback.class);
+ public class RequestCtrlInterceptor implements MethodInterceptor {
+     private static final Log logger = LogFactory.getLog(RequestCtrlInterceptor.class);
      public Object intercept(Object object, Method method, Object[] args, MethodProxy proxy) throws Throwable {
          if(method.getName().equals("request")) {
             TimeOfDay startTime = new TiemOfDay(0, 0, 0);
@@ -59,15 +57,16 @@ AOP是一种理论, Spring AOP是针对Spring框架落地的一种AOP实现. Spr
      }
  }
  ```
- 这样, RequestCtrlCallback就实现了对request()方法请求进行访问控制的逻辑. 现在我们要通过CGLIB的Enhance类为目标动态生成一个类, 并将RequestCtrlCallback中的横切逻辑附加到该子类中, 代码如下:
+ 这样, RequestCtrlInterceptor就实现了对request()方法请求进行访问控制的逻辑. 现在我们要通过CGLIB的Enhance类为目标动态生成一个类, 并将RequestCtrlInterceptor中的横切逻辑附加到该子类中, 代码如下:
  ```Java
  Enhancer enhancer = new Enhancer();
  enhancer.setSuperclass(Requestable.class);
- enhancer.setCallback(new RequestCtrl());
+ enhancer.setCallback(new RequestCtrlInterceptor());
  
  Requestable proxy = (Requestable) enhancer.create();
  proxy.request();
  ```
+ 这里是使用Enhancer来演示在对象中加入横切逻辑, 在后续的内容中我们将会使用经过封装的更高级的Spring AOP工具, Advisor
 
 # Spring AOP
 对于Joinpoint, Spring AOP仅支持方法级别的Joinpoint, 更确切的说, 仅支持方法执行(Method Execution)类型的Joinpoint, 原因有以下几点:
@@ -131,13 +130,68 @@ public class DiscountMethodInterceptor implements MethodInterceptor {
 <bean id="discountInterceptor" class="...DiscountMethodInterceptor"></bean>
 ```
 
-当我定义了多个MethodInterceptor时, 他们是如何执行呢?这就要用到**责任链模式**
-
-### 责任链模式
+当我定义了多个MethodInterceptor时, 他们是如何执行呢?这就要用到**{% post_link java-chain-of-responsibility '责任链模式' %}**
 
 # SpringAOP的织入
 AspectJ使用ajc编译器作为它的织入器, 在SpringAOP中使用`org.springframework.aop.ProxyFactory`, 在Spring AOP中这是最基本的织入器.
 
 总的思路是: **Spring AIO是基于代理模式的AOP实现, 织入完成后, 会返回织入横切逻辑的代理对象**. 也就是说ProxyFactory返回织入了横切逻辑的代理对象.
+
+使用ProxyFactory需要两个基本的东西, 一个是传入进行织入的目标对象, 一个是将要应用到目标对象的Aspect(在Spring中叫做Advisor). 指定对应的Advisor, 就可以添加各种类型的Advice, 比如伪代码:
+```Java
+ProxyFactory weaver = new ProxyFactory(new Executable());
+NameMatchMethodPointcutAdvisor advisor = new NameMathMethodPointcutAdvisor();
+advisor.setMappedName("request");
+advisor.setAdvice(new RequestCtrlInterceptor());
+weaver.addAdvisor(advisor);
+
+// 
+weaver.setProxyTargetClass(true);
+
+Requestable proxyObject = (Requestable) weaver.getProxy();
+proxyObject.request();
+System.out.println(proxyObject.getClass());
+
+// out
+// class ...Requestable$$EnhancerByCGLIB$$9e62fc83
+// 从输出中可以看出ProxyFactory底层还是使用了之前的Enhancer, 也可以看出通过CGLIB得到的类的命名方式与动态代理的方式不太一样, 动态代理是"$Proxy0"
+```
+
+我们知道Spring AOP在使用代理模式实现AOP的过程中采用了动态代理和CGLIB两种机制, 分别对实现了某些接口的目标类和没有实现任何接口的目标类进行代理. 当目标类没有实现任何接口时, 默认使用动态代理, 但是这里设置了`proxyTargetClass`的属性为`true`, 强制其采用基于类的代理, 即使目标类确实是基于接口的.
+
+## 探索ProxyFactory本质
+先来看一下类之间的关系
+{% plantuml %}
+AdvisedSupport <.. AopProxyFactory: according to
+interface AopProxyFactory {
+    AopProxy createAopProxy(AdvisedSupport config)
+}
+AopProxyFactory <|.. DefaultAopProxyFactory
+
+AopFactory <.. AopProxyFactory: create
+interface AopFactory {
+    Object getProxy()
+    Object getProxy(ClassLoader classLoader)
+}
+
+AopFactory <|.. JdkDynamicProxy
+
+JdkDynamicProxy ..|> InvocationHandler
+interface InvocationHandler {}
+
+AopFactory <|.. Cglib2AopProxy
+
+{% endplantuml%}
+
+其中AopProxy有Cglib2AopProxy和JdkDynamicProxy两种实现. 因为动态代理需要通过InvocationHandler提供调用拦截, 所以JdkDynamicProxy同时也要实现InvocationHandler接口.
+
+AopProxy实例化代理对象的过程采用了抽象工厂模式. 
+
+
+一个类如果不声明, 默认的构造方法, 那么他到底有没有默认的构造方法?
+一个类声明了默认的构造方法, 但是没有写访问控制符, 那么这个访问控制符是什么?
+一个类声明了默认的构造方法, 但是没有写访问控制符, 为什么通过Class.forName(...).getConstructor()会抛出NoSuchMethodException?
+
+
 
 
