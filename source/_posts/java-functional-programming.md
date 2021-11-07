@@ -4,6 +4,8 @@ date: 2021-11-04 11:10:25
 tags:
 - Java
 ---
+编程风格可以分为命令式(Imperative)和声明式(Declarative), 它声明了要做什么, 而不是每一步如何做. 
+这正是我们在函数式编程中所看到的的.
 
 ## Lambda表达式
 从概念上来说, Lambda表达式, 生产的是函数, 而不是类
@@ -92,5 +94,26 @@ public class UnboundMethodReferences {
       System.out.println(m.make(new X()));
 
    }
+}
+```
+
+
+Stream.generate()搭配Supplier<T>使用的例子
+```java
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+public class Generator implements Supplier<String> {
+    Random rand = new Random(47);
+    char[] letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+    public String get() {
+        return "" + letters[rand.nextInt(letters.length)];
+    }
+    public static void main(String[] args) {
+        String word = Stream.generate(new Generator())
+                            .limit(30)
+                            .collect(Collectors.joining());
+        System.out.println(word);
+    }
 }
 ```

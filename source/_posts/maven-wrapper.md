@@ -17,10 +17,19 @@ mvn -N io.takari:maven:wrapper -Dmaven=3.6.3
 This creates two files (mvnw, mvnw.cmd) and a hidden directory (.mvn). mvnw can be used in Unix-like environments and mvnw.cmd can be used in Windows.
 这将会创建两个文件和一个目录. `mvnw`用来Unix-like环境, `mvnw.cmd`用在Windows环境.
 
+Instead of the usual mvn command, they would use mvnw. for example:
+```shell
+./mvnw clean install
+```
 
 ## Maven Wrapper原理
 The `.mvn/wrapper` directory has a jar file `maven-wrapper.jar` that downloads the required version of Maven if it’s not already present. It installs it in the `./m2/wrapper/dists` directory under the user’s home directory.
 
+Where does it download Maven from? This information is present in the mvn/wrapper/maven-wrapper.properties file:
+```properties
+distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.2/apache-maven-3.5.2-bin.zip
+wrapperUrl=https://repo.maven.apache.org/maven2/io/takari/maven-wrapper/0.5.6/maven-wrapper-0.5.6.jar
+```
 
 ## Maven Wrapper贯彻的思想
 Years ago, I was on a team developing a desktop-based Java application. We wanted to share our artifact with a couple of business users in the field to get some feedback. It was unlikely they had Java installed. Asking them to download, install, and configure version 1.2 of Java (yes, this was that long ago!) to run our application would have been a hassle for them.
