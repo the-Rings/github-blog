@@ -154,3 +154,7 @@ categories:
 3. 写完之后, 提交源码`git add `&`git commit`&`git push`
 4. 部署发布`hexo clean`&`hexo generate`&`hexo deploy`
 
+
+# Troubleshooting
+总结一些在部署中的错误解决
+1. 在执行`hexo generate`中出现错误: `Template render error: (unknown path)`, 多半是语法错误, 比如, 在使用`{% xxx %}`时写成了`{ % xxx %}`, 前方多了一个空格.

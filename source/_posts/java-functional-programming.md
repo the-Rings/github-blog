@@ -201,8 +201,10 @@ public class FunctionalAnnotation {
   }
 }
 ```
-其中, @FunctionalInterface是一个可选注解, 没有也行. 
+
+其中, `@FunctionalInterface`是一个可选注解, 没有也行. 
 通过以上例子我们可以得知, Lambda表达式被指派的接口只能有一个抽象方法对应. 摘录一段解释
+
 {% blockquote Bruce Eckel, OnJava8 %}
 Look closely at what happens in the definitions of f and fna. Functional and
 FunctionalNoAnn define interfaces. Yet what is assigned is just the method goodbye.
@@ -214,13 +216,15 @@ the covers, the compiler wraps your method reference or lambda expression in an
 instance of a class that implements the target interface.**
 
 A @FunctionalInterface is also called a Single Abstract Method (SAM) type.
-{ % endblockquote % }
+{% endblockquote %}
 
 
 如果将Lambda表达式作为参数传入, 看流式编程中, `Stream.of(...).map((x, y) -> x + y))`, 其中map方法接收了一个表达式. 查看其源码:
+
 ```java
 <R> Stream<R> map(Function<? super T, ? extends R> mapper);
 ```
+
 然后, 再查看Function接口:
 ```java
 package java.util.function;
@@ -301,7 +305,8 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 public @interface FunctionalInterface {}
 ```
-@FunctionalInterface是为了检测, 以限制所注释的接口中只能有一个抽象方法.
+
+`@FunctionalInterface`是为了检测, 以限制所注释的接口中只能有一个抽象方法.
 
 在`java.util.function`中还有很多函数式接口, 这里就不在列举了.
 
@@ -375,25 +380,6 @@ public class Closure1 {
 ```
 Lambda可以无限制的引用成员变量(members), 但是当其引用局部变量(local variable)时, 局部变量必须声明为final.
 
-Stream.generate()搭配Supplier<T>使用的例子
-```java
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
-public class Generator implements Supplier<String> {
-    Random rand = new Random(47);
-    char[] letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-    public String get() {
-        return "" + letters[rand.nextInt(letters.length)];
-    }
-    public static void main(String[] args) {
-        String word = Stream.generate(new Generator())
-                            .limit(30)
-                            .collect(Collectors.joining());
-        System.out.println(word);
-    }
-}
-```
 # 总结
 Lambda表达式与Method Reference原理上是一样的, 编译器会解析它们, 之后将它们包裹在一个类中, 这个类实现了目标接口. 所以, 当我们去书写Lambda表达式的时候, 编译器也会据此生成代码.
 
