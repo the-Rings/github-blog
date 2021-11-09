@@ -11,7 +11,7 @@ tags:
 # 责任链模式
 用这样一段OnJava8的原文来描述责任链模式
 
-{% blockquote Bruce Eckel, On Java 8 %}
+{% blockquote Bruce Eckel, OnJava8 %}
 In recursion, one method calls itself over and over until it reaches a termination condition; with **Chain of Responsibility**, a method calls the same base-class method (with a different implementation) which calls another implementation of the base-class method, etc., until it reaches a termination condition.
 {% endblockquote %}
 
