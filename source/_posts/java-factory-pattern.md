@@ -14,7 +14,7 @@ A Factory forces object creation to occur through a common point, preventing cre
 工厂模式其实是封装对象的创建过程. 强制将让对象的创建发生在一个统一的地方, 阻止代码散落在系统中.
 
 静态工厂就不说了, 就是通过传入对象的标识, 在创建方法内部判断条件new出目标对象.
-那么动态工厂, 就更加解耦, 通过传入的标识, 反射得到类, 然后`xxx.getNewInstance()`
+那么动态工厂, 就更加解耦, 通过传入的标识, 反射得到类, 然后`xxx.getNewInstance()`, 例子如下:
 ```java
 class Shape {
   @Override

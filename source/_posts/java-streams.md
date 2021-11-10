@@ -72,3 +72,13 @@ String res = builder.build().map(...).collect(Collector.joining(" "));
 3. .forEach()
 4. .reduce(...)
 
+
+### Optional类
+为了防止流执行的过程中, 出现"空流"而中断抛出异常, 所以引入了Optional类, 为空时将会返回`Optional.empty`
+```java
+// 空流, 等价于: Stream<String> s = Stream.empty();
+Stream.<String>empty().findFirst()
+// output: Optional.empty
+```
+原理是将返回值塞到了Optional对象中, Optional类提供了很多诸如`isPresent()`, `orElse`, `orElseGet`等方法, 在Python3.7以后引入类型系统后也有了Optional类型, 如果一个变量被标识为Optional, 那么这个对象可能为none.
+
