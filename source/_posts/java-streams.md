@@ -37,12 +37,38 @@ System.out.println(rints);
 
 # Creating Streams
 1. 通过Streams.of(...)将一组元素转换为Stream
-2. 每隔几何可以通过调用其`.stream()`方法来产生一个流.
+2. 每隔集合可以通过调用其`.stream()`方法来产生一个流.
+3. `Stream.generate(...)`, generate接收一个参数`Supplier<T>`, 通过调用实现了`Supplier<T>`接口的类的get方法(也可以传Lambda表达式, 原理也是有个类实现了Supplier接口, 具体在函数式编程里有详细介绍). 不过generate必须有一个限制, 不能无限制的运行. 否则会造成`java.lang.OutOfMemoryError: Java heap space`错误. 比如, 中间加入了limit函数
+```java
+Stream.generate(() -> "h").limit(30).collect(Collectors.joining());
+```
+4. `Stream.iterate(...)`, iterate接收的参数第一个是seed, 第二个其实是`Function<T>`, 如下例子, 生成斐波那契数列:
+```java
+int x = 1;
+// seed将会作为i的初始化值, 返回值y将作为参数再次会传递给该函数
+Stream.iterate(0, (i) -> {int y = i + x; x = i; return y;}).limit(30).forEach(System.out::println);
+```
+5. 使用建造者模式. 其实建造者模式类似于新建一个集合, 然后往里put元素.
+```java
+Stream.Builder<String> builder = Stream.builder();
+String res = builder.build().map(...).collect(Collector.joining(" "));
+```
+6. `Arrays.stream()`
 
 # Intermediate Operations
-使用peek()帮助调试
+1. .map(...)
+2. .peek(...), 使用peek()帮助调试
+3. .skip(...)
+4. .limit(...)
+5. .sorted(Comparator.reverseOrder())
+6. .filter(Predicate)
+7. .distinct()
+8. parallel(), 这个重点说一下, 这个是将流中计算机制换为并行计算, 所以最终输出元素的顺序是随机的. 要是再此基础上要得到有序的输出, 需要上如`forEachOrdered(...)`等的Terminal Operations
+
 
 # Terminal Operations
-1. collect(...)
-
+1. .collect(Collector.toList())
+2. .toArray()
+3. .forEach()
+4. .reduce(...)
 
