@@ -70,8 +70,46 @@ String res = builder.build().map(...).collect(Collector.joining(" "));
 1. .collect(Collector.toList())
 2. .toArray()
 3. .forEach()
-4. .reduce(...)
+4. .reduce(...), 最终输出的是一个元素. 
+```java
+// Reduce函数功能展示
+import java.util.Random;
+import java.util.stream.Stream;
 
+class IntegerSupplier {
+    // 生成一个100以内的随机数流(建造者模式)
+	static Stream<Integer> supply() {
+		Random rand = new Random(15);
+		final int BOUND = 100;
+		Stream.Builder<Integer> builder = Stream.builder();
+		for(int i = 0; i < 30; i++) {
+			builder.add(rand.nextInt(BOUND));
+		}
+		return builder.build();
+	}
+}
+
+public class Reduce {
+	public static void main(String[] args) {
+		// reduce(BinaryOperator), BinaryOperator这个函数式接口对应的函数只有两个参数
+		// 其中fr0既作为初始化的第一个值, 又作为每次的返回值传入, 在输出中可以看到
+		// 最终reduce返回的值, Integer被Optional包裹
+		IntegerSupplier.supply().reduce((fr0, fr1) -> {
+			System.out.println(fr0 + "--compare to--" + fr1);
+			return fr0 < fr1 ? fr0 : fr1;
+		}).ifPresent(System.out::println);
+	}
+}
+// output:
+/* 41--compare to--72
+ * 72--compare to--38
+ * 72--compare to--67
+ * 72--compare to--85
+ * 85--compare to--60
+ * 85--compare to--59
+ * Optional[85]
+*/
+```
 
 ### Optional类
 为了防止流执行的过程中, 出现"空流"而中断抛出异常, 所以引入了Optional类, 为空时将会返回`Optional.empty`

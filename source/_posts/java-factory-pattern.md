@@ -54,3 +54,28 @@ public class DynamicFactory implements ShapeFactory {
   }
 }
 ```
+
+# 抽象工厂
+抽象工厂是在工厂的基础上又封装了一层, 即将工厂传入
+```java
+class AbstractFactory {
+    Supplier<Player> player;
+    Supplier<Obstacle> obstacle;
+}
+
+class ConcreteFactory1 extends AbstractFactory {
+    ConcreteFactory() {
+        player = Player1::new;
+        obstacle = Obstacle1::new;
+    }
+}
+public class GameEnvironment {
+  private Player p;
+  private Obstacle ob;
+  public getInstance(AbstractFactory factory) {
+        p = factory.player.get();
+        ob = factory.obstacle.get();
+    }
+}
+
+```

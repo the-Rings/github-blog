@@ -27,7 +27,7 @@ tags:
 # Spring AOP
 AOP是一种理论, Spring AOP是针对Spring框架落地的一种AOP实现. Spring的设计哲学是简单而强大, 用20%的AOP的支持来满足80%的场景.
 
- ## 动态代理与CGLIB
+ ## 动态代理与CGLIB(基于ASM)
  动态代理, 这里不再赘述, 在博客里有专门剖析.
  结合Spring AOP来说, 动态代理实现InvocationHandler的类是我们实现横切逻辑的地方, 它是横切逻辑的载体, 作用和Advice是一样的. 这就理解了Advice是什么了.
  动态代理虽好, 但是不能满足所有需求. 因为动态代理机制只能对实现了相应Interface的类使用, 如果某个类没有实现任何Interface, 就无法使用动态代理机制为其生成相应的动态代理对象.
@@ -185,11 +185,35 @@ AopFactory <|.. Cglib2AopProxy
 
 其中AopProxy有Cglib2AopProxy和JdkDynamicProxy两种实现. 因为动态代理需要通过InvocationHandler提供调用拦截, 所以JdkDynamicProxy同时也要实现InvocationHandler接口.
 
-AopProxy实例化代理对象的过程采用了抽象工厂模式. 
+AopProxy实例化代理对象的过程采用了抽象工厂模式进行封装, 即通过AopProxyFactory进行.
+```java
+public interface AopProxyFactory {
+
+	/**
+	 * Create an {@link AopProxy} for the given AOP configuration.
+	 * @param config the AOP configuration in the form of an
+	 * AdvisedSupport object
+	 * @return the corresponding AOP proxy
+	 * @throws AopConfigException if the configuration is invalid
+	 */
+	AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException;
+
+}
+
+```
+AopProxyFactory的实现类只有一个, 就是DefaultAopProxyFactory, 在DefaultAopProxyFactory会经过一个判断来决定使用Cglib还是动态代理
+```java
+if(config.isOptimize || config.isProxyTargetClass() || ...) {
+    // 创建Cglib2AopProxy实例, 返回
+} else {
+    // 创建JdkDynamicAopProxy实例, 返回
+}
+```
+以下内容定格在177页, 关于AOP的剩余内容以后在补充.
 
 
-一个类如果不声明, 默认的构造方法, 那么他到底有没有默认的构造方法?
-一个类声明了默认的构造方法, 但是没有写访问控制符, 那么这个访问控制符是什么?
+一个类如果不声明, 默认的构造方法, 那么他到底有没有默认的构造方法? 没有
+一个类声明了默认的构造方法, 但是没有写访问控制符, 那么这个访问控制符是什么? 
 一个类声明了默认的构造方法, 但是没有写访问控制符, 为什么通过Class.forName(...).getConstructor()会抛出NoSuchMethodException?
 
 
