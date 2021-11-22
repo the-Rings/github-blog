@@ -263,3 +263,173 @@ already contained in the {@link BeanFactory}.
 
 #### Property Conditions...等不再讨论
 
+
+## AutoConfiguration测试
+```java
+public class MyService {
+
+  private String name;
+
+  public MyService(String name) {
+    this.name = name;
+  }
+
+  public MyService() {}
+
+  public String getName() {
+    return this.name;
+  }
+}
+```
+
+```java
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration(proxyBeanMethods = false)
+public class MyServiceAutoConfiguration {
+
+  @Bean
+  @ConditionalOnMissingBean // equivalent to @ConditionalOnMissingBean(MyService.class)
+  public MyService myService() {
+    // When MyService(bean type) doesn't exist, this bean will create.
+    return new MyService("test123");
+  }
+}
+```
+
+测试AutoConfiguration需要借助ApplicationContextRunner, ApplicationContextRunner is usually defined as field of the "test class" to gather the base, common configuration.
+```java
+import com.example.multimodule.service.auto.MyService;
+import com.example.multimodule.service.auto.MyServiceAutoConfiguration;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@SpringBootTest
+public class TestAutoConfiguration {
+  // load MyServiceAutoConfiguration.class
+  private final ApplicationContextRunner contextRunner =
+      new ApplicationContextRunner()
+          .withConfiguration(AutoConfigurations.of(MyServiceAutoConfiguration.class));
+
+  @Configuration(proxyBeanMethods = false)
+  static class UserConfiguration {
+    @Bean
+    MyService myCustomService() {
+      // This bean is always created.
+      return new MyService("mine");
+    }
+  }
+
+  @Test
+  void conditionEffectedTest() {
+    // @ConditionalOnMissingBean effect
+    this.contextRunner.run(
+        (context) -> {
+          assertThat(context).getBean("myService");
+          assertThat(context).hasSingleBean(MyService.class);
+          assertThat(context.getBean(MyService.class).getName()).isEqualTo("test123");
+        });
+  }
+
+  @Test
+  void conditionNotEffectedTest() {
+    // @ConditionalOnMissingBean effect
+    this.contextRunner
+        .withUserConfiguration(UserConfiguration.class) // add UserConfiguration into context.
+        .run(
+            (context -> {
+              assertThat(context).hasSingleBean(MyService.class);
+              assertThat(context)
+                  .getBean("myCustomService")
+                  .isSameAs(context.getBean(MyService.class));
+              assertThat(context.getBean(MyService.class).getName()).isEqualTo("mine");
+            }));
+  }
+}
+```
+从以上例子中可以看出, 当仅仅ApplicationContext仅仅加载MyServiceAutoConfiguration类时, 注入的Bean是`myService`, 当MyServiceAutoConfiguration和UserConfiguration都加载是注入的Bean是`myCustomService`, 从中体现出了@ConditionalOnMissingBean的作用.
+
+更多关于Autoconfiguration相关Conditional注解的测试可以查看: https://www.baeldung.com/spring-boot-context-runner
+
+# 构建自己的starter
+a custom starter can contain the following:
+
+ - The autoconfigure module that contains the auto-configuration code for "acme".
+
+ - The starter module that provides a dependency to the autoconfigure module as well as "acme" and any additional dependencies that are typically useful. In a nutshell, adding the starter should provide everything needed to start using that library.
+
+#### Naming
+You should make sure to provide a proper namespace for your starter. Do not start your module names with spring-boot
+#### Configuration keys
+If your starter provides configuration keys, use a unique namespace for them. In particular, do not include your keys in the namespaces that Spring Boot uses (such as server, management, spring, and so on). 
+```java
+import java.time.Duration;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties("acme")
+public class AcmeProperties {
+
+    /**
+     * Whether to check the location of acme resources.
+     */
+    private boolean checkLocation = true;
+
+    /**
+     * Timeout for establishing a connection to the acme server.
+     */
+    private Duration loginTimeout = Duration.ofSeconds(3);
+
+    public boolean isCheckLocation() {
+        return this.checkLocation;
+    }
+
+    public void setCheckLocation(boolean checkLocation) {
+        this.checkLocation = checkLocation;
+    }
+
+    public Duration getLoginTimeout() {
+        return this.loginTimeout;
+    }
+
+    public void setLoginTimeout(Duration loginTimeout) {
+        this.loginTimeout = loginTimeout;
+    }
+
+}
+```
+Here are some rules we follow internally to make sure descriptions are consistent:
+ - Do not start the description by "The" or "A".
+ - For boolean types, start the description with "Whether" or "Enable".
+ - For collection-based types, start the description with "Comma-separated list"
+ - Use java.time.Duration rather than long and describe the default unit if it differs from milliseconds, such as "If a duration suffix is not specified, seconds will be used".
+ - Do not provide the default value in the description unless it has to be determined at runtime.
+
+> Make sure to trigger meta-data generation so that IDE assistance is available for your keys as well. You may want to review the generated metadata (META-INF/spring-configuration-metadata.json) to make sure your keys are properly documented. Using your own starter in a compatible IDE is also a good idea to validate that quality of the metadata.
+
+## The "autoconfigure" module
+ The `autoconfigure` module contains everything that is necessary to get started with the library. It may also contain configuration key definitions (such as @ConfigurationProperties) and any callback interface that can be used to further customize how the components are initialized.
+
+Spring Boot uses an annotation processor to collect the conditions on auto-configurations in a metadata file (`META-INF/spring-autoconfigure-metadata.properties`). If that file is present, it is used to eagerly filter auto-configurations that do not match, which will improve startup time. It is recommended to add the following dependency in a module that contains auto-configurations:
+```gradle
+dependencies {
+    compileOnly "org.springframework.boot:spring-boot-autoconfigure-processor"
+}
+```
+
+## Starter module
+The starter is really an empty jar. Its only purpose is to provide the necessary dependencies to work with the library. You can think of it as an opinionated view of what is required to get started.
+
+Do not make assumptions about the project in which your starter is added. If the library you are auto-configuring typically requires other starters, mention them as well. Providing a proper set of *default* dependencies may be hard if the number of optional dependencies is high, as you should avoid including dependencies that are unnecessary for a typical usage of the library. In other words, you should not include optional dependencies.
+
+> NOTE: Either way, your starter must reference the core Spring Boot starter (spring-boot-starter) directly or indirectly (there is no need to add it if your starter relies on another starter). If a project is created with only your custom starter, Spring Boot’s core features will be honoured by the presence of the core starter.
+
+至此, 创建自己的starter并没有完成, 以上只是记录一下spring boot相关的重要的话, 接下来将会在`E:\SpringProjects\PracticeProjects\spring-boot-practice-auto-configuration`中先进行实战, 对照着`E:\SpringProjects\PracticeProjects\spring-boot-master-auto-configuration`项目的git log一步一步来. 但是要替换`spring-boot-master-auto-configuration`中的`hornetq`为`redis`, 所以先进行redis的学习.
