@@ -104,27 +104,7 @@ categories:
 
    - 然后, 在主题配置文件`theme/next/.config.yml`中设置`local_search: enable: true`
 
-3. 增加流程图插件, 在markdown文档中画出流程图
-    ```shell
-    npm install --save hexo-filter-flowchart
-    ```
-    语法参考: http://flowchart.js.org/
-
-    ```flow
-    st=>start: 开始语句
-    in=>inputoutput: 输入值
-    e=>end: 结束语句
-    op=>operation: 执行操作
-    cond=>condition: 是否成立？
-    out=>inputoutput: 输出值
-    
-    st->in->op->cond
-    cond(yes)->out
-    cond(no)->op
-    out->e
-    ```
-
-4. UML图插件
+3. UML图插件
     ```shell
     npm install --save hexo-tag-plantuml
     ```

@@ -5,9 +5,56 @@ tags:
 - Gradle
 ---
 
+从创建一个最简单的gradle项目开始, 然后介绍multi module项目
+
+# Creating simplest Gradle project for Java
+以创建一个Redis Client为例, 引入一个第三方库Jedis依赖.
+
+1. 首先创建Root Project, 即创建一个文件夹, 添加`settings.gradle`文件并编辑
+```gradle
+rootProject.name = 'simplest-gradle-project'
+
+```
+2. 在root目录下, 创建gradle wrapper的必要文件, `gradlew`, `gradlew.bat`, `gradle`(文件夹), 这些文件可以通过 Spring Initializr 新建一个项目得到.
+3. 在每个subproject下创建`build.gradle`文件, 如下内容(示例)
+```gradle
+plugins {
+	id 'java'
+}
+
+group = 'org.demo'
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    maven {
+      url 'https://maven.aliyun.com/repository/public/'
+    }
+    maven {
+      url 'https://maven.aliyun.com/repository/spring/'
+    }
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+	implementation 'redis.clients:jedis:jedis-3.6.2'
+}
+```
+4. 通过gradle task创建src文件目录(在build.gradle文件中添加下述代码), 然后运行 `./gradlew :createDirs`, 或者直接通过IDEA的gradle插件, 双击`simplest-gradle-project > Tasks > other > createDirs`
+```gradle
+// 创建缺失的src目录
+task createDirs {
+    sourceSets*.java.srcDirs*.each{
+        it.mkdirs()
+    }
+    sourceSets*.resources.srcDirs*.each{
+        it.mkdirs()
+    }
+}
+```
+
 参考官方文档整理而来,
 https://spring.io/guides/gs/multi-module/
-
 
 # Creating a Multi Module Project
 1. 首先创建Root Project, 即创建一个文件夹, 添加`settings.gradle`文件并编辑(首先确定自己有多少子项目)
@@ -32,7 +79,14 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
 repositories {
-	mavenCentral()
+    maven {
+      url 'https://maven.aliyun.com/repository/public/'
+    }
+    maven {
+      url 'https://maven.aliyun.com/repository/spring/'
+    }
+    mavenLocal()
+    mavenCentral()
 }
 
 dependencies {
