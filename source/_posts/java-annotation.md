@@ -1,8 +1,8 @@
 ---
-title: java-annotation
+title: Java注解
 date: 2021-11-24 10:31:14
 tags:
- - Annotation
+- Annotation
 ---
 
 通过格式化的方式让代码附带信息, 之后根据这些约定好的格式, 在源代码时期, 编译时期和运行时期, 通过Annotation Processor做一些操作. 注解可以理解为一种特殊的注释, 只不过是给机器看的.
