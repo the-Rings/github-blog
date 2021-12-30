@@ -1,6 +1,8 @@
 ---
 title: 流式编程
-date: 2021-11-07 18:59:42
+date: 2021-06-07 18:59:42
+categories:
+- Java
 tags:
 - Stream
 ---

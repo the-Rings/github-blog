@@ -1,8 +1,11 @@
 ---
 title: 抽象工厂
-date: 2021-11-03 20:01:57
+date: 2021-07-03 20:01:57
+categories:
+- Java
+- Pattern
 tags:
-- factory
+- factory pattern
 ---
 
 # 动态工厂

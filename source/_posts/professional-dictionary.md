@@ -1,7 +1,8 @@
 ---
 title: professional-dictionary
-date: 2021-11-05 09:32:58
-tags:
+date: 2021-10-05 09:32:58
+categories:
+- 专业词汇
 ---
 > inference 推断 n.
 

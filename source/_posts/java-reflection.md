@@ -1,6 +1,8 @@
 ---
 title: java-reflection
-date: 2021-11-12 17:46:37
+date: 2021-08-12 17:46:37
+categories:
+- Java
 tags:
 - Reflection
 ---

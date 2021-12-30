@@ -1,8 +1,8 @@
 ---
 title: 使用Hexo构建博客
-date: 2018-10-28 14:53:12
-tags: hexo
-categories: 
+date: 2021-05-28 14:53:12
+categories:
+- Hexo
 ---
 
 一直以来，使用其他工具来记录技术知识的积累，以后陆续将其转到github上。使用Hexo搭建项目可以自动将文档生成静态HTML等文件，上传到github上，随时通过your-github-name.github.io查看自己的公开静态信息库。

@@ -1,7 +1,7 @@
 ---
 title: Java函数式编程
-date: 2021-11-04 11:10:25
-tags:
+date: 2021-08-04 11:10:25
+categories:
 - Java
 ---
 编程风格可以分为命令式(Imperative)和声明式(Declarative), 它声明了要做什么, 而不是每一步如何做. 

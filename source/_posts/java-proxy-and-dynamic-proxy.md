@@ -1,9 +1,11 @@
 ---
 title: Java动态代理
-date: 2021-11-01 09:23:05
+date: 2021-08-01 09:23:05
+categories:
+- Java
+- Pattern
 tags:
 - Proxy
-- Spring
 ---
 
 SpringAOP采用动态代理和字节码生成技术实现.

@@ -1,8 +1,8 @@
 ---
 title: 构建多模块项目的最佳实践
-date: 2021-11-19 10:19:26
-tags:
-- Gradle
+date: 2021-06-19 10:19:26
+categories:
+- Package Manager
 ---
 
 从创建一个最简单的gradle项目开始, 然后介绍multi module项目

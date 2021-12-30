@@ -1,6 +1,8 @@
 ---
 title: Maven Wrapper最佳实践
 date: 2021-11-07 16:22:04
+categories:
+- Package Manager
 tags:
 - maven
 ---

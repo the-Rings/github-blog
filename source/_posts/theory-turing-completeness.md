@@ -1,8 +1,9 @@
 ---
 title: 图灵完备
-date: 2021-11-19 14:49:19
+date: 2021-11-12 14:49:19
+categories:
+- 计算机理论
 tags:
-- Theory
 - Turing
 ---
 

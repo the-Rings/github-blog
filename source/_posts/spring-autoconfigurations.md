@@ -1,9 +1,8 @@
 ---
 title: Spring Boot自动装配原理
-date: 2021-11-17 09:54:27
-tags: 
+date: 2021-11-01 09:54:27
+categories: 
 - Spring
-- Autoconfigurations
 ---
 
 Spring Framework’s @Conditional annotation is the core of Autoconfigurations.

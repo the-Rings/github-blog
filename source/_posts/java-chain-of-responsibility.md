@@ -1,9 +1,8 @@
 ---
 title: 责任链模式
 date: 2021-11-02 20:31:25
-tags:
-- java
-- pattern
+categories:
+- Pattern
 ---
 
 这篇博客需和另一篇将Spring AOP的相结合.

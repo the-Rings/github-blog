@@ -1,8 +1,8 @@
 ---
 title: ArrayList
 date: 2021-11-15 16:32:10
-tags:
-- List
+categories:
+- Java
 ---
 
 ArrayList基于数组的List集合, 那么从数组中删除一个元素的底层逻辑是什么样?

@@ -1,6 +1,8 @@
 ---
 title: Java中的类加载器
-date: 2021-11-15 10:50:33
+date: 2021-06-15 10:50:33
+categories:
+- Java
 tags:
 - ClassLoader
 ---
