@@ -1,0 +1,23 @@
+scheme: Gemini
+
+## 菜单设置
+menu:
+  home: / || home                          
+  archives: /archives/ || archive          
+  categories: /categories/ || th           
+  tags: /tags/ || tags                     
+  about: /about/ || user
+
+## 文章更新时间去除
+post_meta:
+  updated_at:
+    enable: false
+
+## 搜索是否可用
+local_search:
+  enable: true
+
+
+## 统计站点，文章的访问次数
+busuanzi_count:
+  enable: true

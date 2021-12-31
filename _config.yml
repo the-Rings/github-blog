@@ -97,12 +97,17 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
+## 主题配置将被_config.[name].yml覆盖(_config.next.yml)
 theme: next
+
+# local search
 search:
   path: search.xml
   field: post
   format: html
   limit: 10000
+
+
 flowchart:
   # raphael:   # optional, the source url of raphael.js
   # flowchart: # optional, the source url of flowchart.js
