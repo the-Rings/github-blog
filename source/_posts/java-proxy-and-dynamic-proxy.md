@@ -15,7 +15,8 @@ SpringAOP采用动态代理和字节码生成技术实现.
  - SubjectImpl 被访问资源的具体实现
  - SubjectProxy 被访问资源的代理实现
  - Client 访问者
-> 没有代理的情况
+
+> 没有代理
 ```java
 public class Client {
     private ISubject subject;
@@ -39,8 +40,7 @@ public class SubjectImpl implements ISubject {
     }
 }
 ```
-
-> 有了代理之后的情况
+> 增加了代理之后
 ```java
 public class Client {
     private ISubject subject;
@@ -50,8 +50,8 @@ public class Client {
 
     public void doSomething() {
         String url = ...;
-		subject.request(url);
-	}
+        subject.request(url);
+    }
     public static void main(String[] args) {
         // 这里增加了一个多余的强制转换
         ISubject proxy = (ISubject)new SubjectProxy(new SubjectImpl());
