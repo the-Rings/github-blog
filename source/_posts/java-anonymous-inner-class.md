@@ -1,5 +1,5 @@
 ---
-title: Java内部类
+title: Java匿名内部类
 date: 2021-11-04 10:24:37
 categories:
 - Java

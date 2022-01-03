@@ -2,7 +2,6 @@
 title: Java动态代理
 date: 2021-08-01 09:23:05
 categories:
-- Java
 - Pattern
 tags:
 - Proxy

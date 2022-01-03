@@ -380,6 +380,7 @@ public class Closure1 {
 ```
 Lambda可以无限制的引用成员变量(members), 但是当其引用局部变量(local variable)时, 局部变量必须声明为final.
 
+
 # 总结
 Lambda表达式与Method Reference原理上是一样的, 编译器会解析它们, 之后将它们包裹在一个类中, 这个类实现了目标接口. 所以, 当我们去书写Lambda表达式的时候, 编译器也会据此生成代码.
 
