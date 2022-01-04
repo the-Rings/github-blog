@@ -44,10 +44,10 @@ public class FunctionalPrograming {
 	 */
 	public static void functionalApproach() {
         // 这里使用Lambda表达式的简洁语法, 但是其底层实现仍然是类和对象, IntCallImpl的步骤可能一步也没有少, 只是看起来像生成了一个函数.
-		fact = n -> n == 0 ? 1 : n * fact.call(n - 1);
-		for (int i = 0; i <= 10; i++) {
-			System.out.println("functionalApproach --> " + fact.call(i));
-		}
+        fact = n -> n == 0 ? 1 : n * fact.call(n - 1);
+        for (int i = 0; i <= 10; i++) {
+            System.out.println("functionalApproach --> " + fact.call(i));
+        }
 	}
 
     public static void anonymousInnerClassApproach() {
@@ -379,7 +379,6 @@ public class Closure1 {
 }
 ```
 Lambda可以无限制的引用成员变量(members), 但是当其引用局部变量(local variable)时, 局部变量必须声明为final.
-
 
 # 总结
 Lambda表达式与Method Reference原理上是一样的, 编译器会解析它们, 之后将它们包裹在一个类中, 这个类实现了目标接口. 所以, 当我们去书写Lambda表达式的时候, 编译器也会据此生成代码.

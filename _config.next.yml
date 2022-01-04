@@ -21,3 +21,20 @@ local_search:
 ## 统计站点，文章的访问次数
 busuanzi_count:
   enable: true
+
+## 代码高亮
+codeblock:
+  # Code Highlight theme
+  # All available themes: https://theme-next.js.org/highlight/
+  theme:
+    light: tomorrow-night
+    dark: tomorrow-night
+
+## 友情链接
+links_settings:
+  title: 友情链接
+links:
+  Draveness: https://draveness.me/
+
+footer:
+  since: 2019 - 2029
