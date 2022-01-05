@@ -26,8 +26,8 @@ public class Client {
 
     public void doSomething() {
         String url = ...;
-		subject.request(url);
-	}
+        subject.request(url);
+    }
     public static void main(String[] args) {
         Client client = new Client(new SubjectImpl());
         client.doSomething();
@@ -269,8 +269,54 @@ public class ProxyGenerator {
  - 第三步，根据第二步生成的代理类，调用`cl.getConstructor({ InvocationHandler.class })`, 相当于调用了代理类的构造方法, 在通过构造器调用`cons.newInstance(new RequestCtrlInvocationHandler(new ISubjectImpl()))`，最终强制转换ISubject对象。
  - 第四步，当代理对象调用`ISubject`的`request`时，首先进入`RequestCtrlInvocationHandler`的invoke方法，在该方法的最后，通过method.invoke(...)来真正调用`ISubjectImpl.request`
 
- 问题1: 代理为什么需要实现某个接口, 继承某个类, 不可以代理吗?
- 答: 代理描述的场景是代理目标类所有的方法, 如果目标类只是继承的话, 它并不一定重写了所有的方法, 所以有些方法没办法代理. 如果要对没有实现任何接口的类, 可以使用CGLIB, 为目标类生成一个子类, 就可以通过子类调用父类的方法, 并在方法的前后加上pre-process或者post-process
+ 问题1: 代理为什么需要实现某个接口, 继承某个类, 不可以代理吗? 
+ 答: 如果要对没有实现任何接口的类, 不使用Java的动态代理，使用CGLIB, 为目标类生成一个子类, 就可以通过子类调用父类的方法, 并在方法的前后加上pre-process或者post-process 
+ 问题2：为什么Java动态代理需要接口？
+ 答：Java仅仅支持单继承，自动生成的代理类$Proxy0需要继承Proxy类，所以必须通过接口实现，接口中的每个方法都会被$Proxy0重写，在重写的方法体中去调用真正的目标类的方法。
+
+以下代码演示，不需要接口，也可以代理：
+```java
+public class Client {
+  private SubjectProxy subject;
+
+  Client(SubjectProxy subject) {
+    this.subject = subject;
+  }
+
+  public void doSomething() {
+    String url = "...";
+    subject.request(url);
+  }
+
+  public static void main(String[] args) {
+    SubjectProxy proxy = new SubjectProxy(new SubjectImpl());
+    Client client = new Client(proxy);
+    client.doSomething();
+  }
+}
+
+public class SubjectImpl {
+    public String request(String url) {
+        return "";
+    }
+}
+
+public class SubjectProxy {
+  private SubjectImpl subject;
+
+  SubjectProxy(SubjectImpl subject) {
+    this.subject = subject;
+  }
+
+  public String request(String url) {
+    // add pre-process logic if neccessary
+    String res = subject.request(url);
+    // add post process logic if neccessary
+    return "Proxy:" + res;
+  }
+}
+
+```
 
 
 

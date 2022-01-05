@@ -7,57 +7,63 @@ categories:
 编程风格可以分为命令式(Imperative)和声明式(Declarative), 它声明了要做什么, 而不是每一步如何做. 
 这正是我们在函数式编程中所看到的的.
 
+函数是Java支持的一种封装，我们通过把大段代码拆成函数，通过一层一层的函数调用，就可以把复杂任务分解成简单的任务，这种分解可以称之为面向过程的程序设计。函数就是面向过程的程序设计的基本单元。
+而函数式编程（请注意多了一个“式”字）——Functional Programming，虽然也可以归结到面向过程的程序设计，但其思想更接近数学计算。
+我们首先要搞明白计算机（Computer）和计算（Compute）的概念。 在计算机的层次上，CPU执行的是加减乘除的指令代码，以及各种条件判断和跳转指令，所以，汇编语言是最贴近计算机的语言。 而计算则指数学意义上的计算，越是抽象的计算，离计算机硬件越远。
+对应到编程语言，就是越低级的语言，越贴近计算机，抽象程度低，执行效率高，比如C语言；越高级的语言，越贴近计算，抽象程度高，执行效率低，比如Lisp语言。
+
+函数式编程就是一种抽象程度很高的编程范式，纯粹的函数式编程语言编写的函数没有变量，因此，任意一个函数，只要输入是确定的，输出就是确定的，这种纯函数我们称之为没有副作用。而允许使用变量的程序设计语言，由于函数内部的变量状态不确定，同样的输入，可能得到不同的输出，因此，这种函数是有副作用的。
+函数式编程的一个特点就是，允许把函数本身作为参数传入另一个函数，还允许返回一个函数！
+像Java、Python对函数式编程提供部分支持。由于允许使用变量，因此，他们不是纯函数式编程语言。Haskell是一种纯函数式变成语言。
+
 # Lambda表达式
 从概念上来说, Lambda表达式, 生产的是函数, 而不是类
 但是在JVM上, everything is a class, 但是经过各种幕后操作之后, **使得Lambda看起来像函数**
 ```java
 interface IntCall {
-	int call(int arg);
+  int call(int arg);
 }
 
 class IntCallImpl implements IntCall {
 
-	@Override
-	public int call(int arg) {
-		if (arg == 0) {
-			return 1;
-		} else {
-			return arg * call(arg - 1);
-		}
-	}
-}
-public class FunctionalPrograming {
-	static IntCall fact;
-
-	/**
-	 * 传统方法实现
-	 */
-	public static void oldApproach() {
-		IntCallImpl intCall = new IntCallImpl();
-		for (int i = 0; i <= 10; i++) {
-			System.out.println("oldApproach --> " + intCall.call(i));
-		}
-	}
-
-	/**
-	 * 函数式编程实现
-	 */
-	public static void functionalApproach() {
-        // 这里使用Lambda表达式的简洁语法, 但是其底层实现仍然是类和对象, IntCallImpl的步骤可能一步也没有少, 只是看起来像生成了一个函数.
-        fact = n -> n == 0 ? 1 : n * fact.call(n - 1);
-        for (int i = 0; i <= 10; i++) {
-            System.out.println("functionalApproach --> " + fact.call(i));
-        }
-	}
-
-    public static void anonymousInnerClassApproach() {
-        IntCall fact = IntCallImpl::call
+  @Override
+  public int call(int arg) {
+    if (arg == 0) {
+      return 1;
+    } else {
+      return arg * call(arg - 1);
     }
+  }
+}
 
-	public static void main(String[] args) {
-		FunctionalPrograming.oldApproach();
-		FunctionalPrograming.functionalApproach();
-	}
+public class FunctionalPrograming {
+  static IntCall fact;
+
+  /** 传统方法实现 */
+  public static void oldApproach() {
+    IntCallImpl intCall = new IntCallImpl();
+    for (int i = 0; i <= 10; i++) {
+      System.out.println("oldApproach --> " + intCall.call(i));
+    }
+  }
+
+  /** 函数式编程实现 */
+  public static void functionalApproach() {
+    // 这里使用Lambda表达式的简洁语法, 但是其底层实现仍然是类和对象, IntCallImpl的步骤可能一步也没有少, 只是看起来像生成了一个函数.
+    fact = n -> n == 0 ? 1 : n * fact.call(n - 1);
+    for (int i = 0; i <= 10; i++) {
+      System.out.println("functionalApproach --> " + fact.call(i));
+    }
+  }
+
+  public static void anonymousInnerClassApproach() {
+    IntCall fact = IntCallImpl::call
+  }
+
+  public static void main(String[] args) {
+    FunctionalPrograming.oldApproach();
+    FunctionalPrograming.functionalApproach();
+  }
 }
 ```
 
@@ -206,7 +212,7 @@ public class FunctionalAnnotation {
 通过以上例子我们可以得知, Lambda表达式被指派的接口只能有一个抽象方法对应. 摘录一段解释
 
 {% blockquote Bruce Eckel, OnJava8 %}
-Look closely at what happens in the definitions of f and fna. Functional and
+Look closely at what happens in the definitions of `f` and `fna`. Functional and
 FunctionalNoAnn define interfaces. Yet what is assigned is just the method goodbye.
 First, this is only a method and not a class. Second, it’s not even a method of a class
 that implements one of those interfaces. This is a bit of magic that was added to Java
@@ -310,13 +316,12 @@ public @interface FunctionalInterface {}
 
 在`java.util.function`中还有很多函数式接口, 这里就不在列举了.
 
-
 ## 高阶函数
 其实就是生成函数的函数, 比如返回一个Lambda表达式.
 ```java
 public Function<String, String> a() {
-		return s -> s.toLowerCase();
-	}
+  return s -> s.toLowerCase();
+}
 ```
 
 ## 闭包(Closure)
@@ -379,6 +384,7 @@ public class Closure1 {
 }
 ```
 Lambda可以无限制的引用成员变量(members), 但是当其引用局部变量(local variable)时, 局部变量必须声明为final.
+
 
 # 总结
 Lambda表达式与Method Reference原理上是一样的, 编译器会解析它们, 之后将它们包裹在一个类中, 这个类实现了目标接口. 所以, 当我们去书写Lambda表达式的时候, 编译器也会据此生成代码.
