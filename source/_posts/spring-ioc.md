@@ -34,13 +34,13 @@ IoC中文被翻译为"控制反转", 一直都让我一头雾水, 软件工程�
 得到一个类的实例, 只有一个办法, 就是new YourClass(). 在只有没有Spring框架的时代, 随着业务逻辑的增加, 类中的属性越来越多,当我们要得到实例时, 发现要提前准备很多很多对象, 比如: new YourClass(obj_1, obj_2, obj_3, ...), 这些obj_n都是通过new得到的.
 当人们把很多项目放在一起比较发现, 这些"new操作", 其实是一种高级别的相似, 那么就可以"抽出它们像的部分", 让机器帮助我们干这些活.于是, 有人能够把我们需要的某个依赖对象"主动"送过来, 而不是我们自己去new, 所以就是"控制反转".
 达到的目的就是"依赖注入", 将依赖对象注入到被注入对象中.
-注入的方式有三种, 接口注入(废弃), 构造器注入, setter注入(推荐)
+注入的方式有三种, 构造器注入(推荐), setter注入(推荐), Field注入(不推荐)
 
 
 ## IoC Service Provider与BeanFactory支持的XML配置
-通常被大家称为IoC容器. IoC Service Provider职责只有两个, 业务对象的构建和业务对象之间的依赖绑定. 也就是记录依赖关系, 据此生成业务对象.
+**通常被大家称为IoC容器**. IoC Service Provider职责只有两个, 业务对象的构建和业务对象之间的依赖绑定. 也就是记录依赖关系, 据此生成业务对象.
 
-Spring的IoC容器是一个IoC Service Provider, 提供了两种类型的支持: BeanFactory和ApplicationContext. 其中ApplicationContext基于BeanFactory, 提供了事件发布等功能.
+**Spring的IoC容器是一个IoC Service Provider, 提供了两种类型的支持: BeanFactory和ApplicationContext. 其中ApplicationContext基于BeanFactory, 提供了事件发布等功能.**
 
 Spring提倡使用POJO, 每个业务对象看做是一个JavaBean. 只有纳入Spring管理的这些类才能看做是业务对象, 如何纳入Spring管理, 就是这些类上有`@Configuration`, `@Component`, `@Service`等注解. 要是定义了一个普通的类, 那么这并不能归IoC容器管辖.
 
@@ -103,7 +103,7 @@ order.persistOrderData();
 综上, IoC容器, 或者具体点BeanFactory, 完成了, 注册/绑定->生产对象, 三个步骤. 这就是IoC的所有目的了.每个业务对象作为个体, 在Spring的XML配置文件中是</bean>元素一一对应的, 只要我们了解了单个业务对象是如何配置的, 那么剩下的就是"依葫芦画瓢".
 
 ### 工厂方法
-这里额外介绍一下工厂方法. 在强调面向接口编程的同时, 有一点需要注意: **虽然对象可以通过声明接口来避免对特定接口实现类的过度耦合**, 但总归需要一种方式将声明依赖接口的对象与接口实现类关联起来,. 只依赖一个不做任何事情的接口是没有任何用处的.
+这里额外介绍一下工厂模式. 在强调面向接口编程的同时, 有一点需要注意: **虽然对象可以通过声明接口来避免对特定接口实现类的过度耦合**, 但总归需要一种方式将声明依赖接口的对象与接口实现类关联起来,. 只依赖一个不做任何事情的接口是没有任何用处的.
 ```java
 public class Foo {
     private BarInterface barInterface;
@@ -120,7 +120,7 @@ public class Foo {
     public Foo() {
         // 静态工厂
         // barInterface = BarInterfaceFactory.getInterface()
-        // 或者, 非静态工厂
+        // 抽象工厂
         // barInterface = new BarInterfaceFactory().getInstance();
     }
 }
@@ -130,10 +130,10 @@ public class Foo {
 ```xml
 <bean id="foo" class="...Foo">
     <property name="barInterface">
-        <ref bean="bar">
+        <ref bean="bar"/>
     </property>
 </bean>
-<bean id="bar" class="...StaticBarInterfaceFactory" factory-method="getInstance">
+<bean id="bar" class="...StaticBarInterfaceFactory" factory-method="getInstance"/>
 ```
 factory-method指定工厂方法名, 然后容器调用静态方法getInstance. 也就是说, 为对象foo注入的bar对象实际是BarInterfaceImpl的实例.
 

@@ -46,7 +46,7 @@ Annotation Processor机制是什么？.
 ## Runtime Annotations Processing
 在运行时通过反射完成一些操作的话，不是继承AbstractProcessor，只需要通过Java反射API中扩展的getAnnotation(xxx.class)方法即可。
 
-比如，通过自定义注解@Query(...)来实现动态查询，事先在一个类Criteria，其中声明好查询条件的字段Fields，都用@Query装饰。然后写这样一个方法，接收Criteria对象criteria，criterai.getClass().getDeclaredFields()，遍历这个数组，然后对数组中的每个Field，field.setAccessible(true)，保证对private的访问。然后field.getAnnotation(Query.class)获得当前这个@Query传入的参数，确定查询条件是等于，like等等。根据filed.getName()获得字段名称，filed.get(criteria)获得对象中此属性的值。
+比如，通过自定义注解@Query(...)来实现动态查询，事先在一个类Criteria，其中声明好查询条件的字段Fields，都用@Query装饰。然后写这样一个方法，接收Criteria对象criteria，criteria.getClass().getDeclaredFields()，遍历这个数组，然后对数组中的每个Field，field.setAccessible(true)，保证对private的访问。然后field.getAnnotation(Query.class)获得当前这个@Query传入的参数，确定查询条件是等于，like等等。根据filed.getName()获得字段名称，filed.get(criteria)获得对象中此属性的值。
 ```java
 import cn.hutool.core.util.ObjectUtil;
 import com.lee.annotation.Query;
