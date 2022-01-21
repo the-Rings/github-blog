@@ -10,9 +10,9 @@ SpringBoot的启动过程就是SpringApplication实例化并运行run方法的�
 1. 获取监听器，启动事件监听
 2. 获取命令行参数，准备项目环境
 3. 打印Banner
-4. 创建ApplicationContext，对于Web应用返回AnnotationConfigServletWebServerApplicationContext
+4. 初始化ApplicationContext(对于Web应用返回AnnotationConfigServletWebServerApplicationContext)
 5. prepareContext
-6. refreshContext
+6. 刷新上下文(refreshContext)
 7. afterRefresh, 三个方法完整的建立Context
 8. 向监听器发出执行结束的通知，返回ConfigurableApplicationContext
 

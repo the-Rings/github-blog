@@ -172,7 +172,7 @@ x -> x.toString()
 ```java
 (x, y) -> x + y
 ```
-必须当Lambda表达式被指派给某个接口, 才能确定其类型. 比如: 
+**必须当Lambda表达式被指派给某个接口, 才能确定其类型**. 比如: 
 ```java
 @FunctionalInterface
 interface Functional {
