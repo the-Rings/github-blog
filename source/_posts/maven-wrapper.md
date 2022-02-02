@@ -9,6 +9,16 @@ tags:
 
 将一个maven项目所有信息都保留在项目根目录下, 包括maven本身
 
+## 结合IDEA的最佳实践
+收到这个"捆绑思想"的影响. 我希望我可以在开发时, 将项目中的依赖从本地仓库中分离. 一个项目一个依赖库, 就比如node_modules.
+1. 安装好maven wrapper, 在`$PROJECT_DIR$`下执行: `$mvn -N io.takari:maven:wrapper [-Dmaven=3.6.3]`
+2. 复制一个`settings.xml`到`$PROJECT_DIR$/.mvn/`下
+3. `$PROJECT_DIR$/.mvn/`新建文件夹`repository`
+4. IDEA中配置`Setting > Build, Execution, Deployment > Build Tools > Maven`
+ - 修改`Maven Home Path`为`Use Maven wrapper`, 如果发现没有这个选项说明IDEA没有更新(至少要2021.2.3+的版本)
+ - 修改`User settings file`为`$PROJECT_DIR$/.mvn/settings.xml`
+ - 修改`Local repository`为`$PROJECT_DIR$/.mvn/repository`
+
 
 ## Maven Wrapper安装
 在项目根目录下
@@ -42,12 +52,4 @@ Over the years I came across this idea in many places. Today when we containeriz
 The Maven Wrapper makes it easy to build our code on any machine, including CI/CD servers. We don’t have to worry about installing the right version of Maven on the CI servers anymore!
 
 
-## 结合IDEA的最佳实践
-收到这个"捆绑思想"的影响. 我希望我可以在开发时, 将项目中的依赖从本地仓库中分离. 一个项目一个依赖库, 就比如node_modules.
-1. 安装好maven wrapper
-2. 复制一个`settings.xml`到`$PROJECT_DIR$/.mvn/`下
-3. `$PROJECT_DIR$/.mvn/`新建文件夹`repository`
-4. IDEA中配置`Setting > Build, Execution, Deployment > Build Tools > Maven`
- - 修改`Maven Home Path`为`Use Maven wrapper`, 如果发现没有这个选项说明IDEA没有更新(至少要2021.2.3+的版本)
- - 修改`User settings file`为`$PROJECT_DIR$/.mvn/settings.xml`
- - 修改`Local repository`为`$PROJECT_DIR$/.mvn/repository`
+

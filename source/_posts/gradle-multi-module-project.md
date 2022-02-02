@@ -1,5 +1,5 @@
 ---
-title: 构建多模块项目的最佳实践
+title: 使用Gradle构建多项目
 date: 2021-06-19 10:19:26
 categories:
 - Package Manager
@@ -37,10 +37,10 @@ repositories {
 }
 
 dependencies {
-	implementation 'redis.clients:jedis:jedis-3.6.2'
+	// implementation 'redis.clients:jedis:jedis-3.6.2'
 }
 ```
-4. 通过gradle task创建src文件目录(在build.gradle文件中添加下述代码), 然后运行 `./gradlew :createDirs`, 或者直接通过IDEA的gradle插件, 双击`simplest-gradle-project > Tasks > other > createDirs`
+4. 如果通过gradle task创建src文件目录(在build.gradle文件中添加下述代码), 然后运行 `./gradlew :createDirs`, 或者直接通过IDEA的gradle插件, 双击`simplest-gradle-project > Tasks > other > createDirs`
 ```gradle
 // 创建缺失的src目录
 task createDirs {
