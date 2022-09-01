@@ -13,7 +13,7 @@ timezone: Asia/Shanghai
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://the-rings.github.io
+url: https://the-rings.gitee.io
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -119,7 +119,8 @@ tag_plantuml:
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
+## 注意：每次hexo deploy就要在gitee上点击一次“部署”（真菜）
 deploy:
   type: git
-  repo: git@github.com:the-Rings/the-Rings.github.io.git
+  repo: git@gitee.com:the-rings/the-rings.git
   branch: main
