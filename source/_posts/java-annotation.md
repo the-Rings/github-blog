@@ -13,7 +13,7 @@ categories:
 
 注解不支持继承.
 
-有五种元注解, 元注解用于注解其他注解. 其中@Target和@Retention是必须的. @Retention标识了注解在那个阶段起作用，参数SOURCE，CLASS，RUNTIME中的一个，其中SOURCE表示注解将会被编译器丢弃（忽略），CLASS表示注解将会被JVM丢弃（忽略），RUNTIME表示注解可以再运行时起作用，并一直保留，所以可以通过反射读取注解信息。也就是说，SOURCE在complie time起作用，javac编译完就丢弃，比如@SuppressWarnings @Override就用在启动编译的时候。比如:
+有五种元注解, 元注解用于注解其他注解. 其中@Target和@Retention是必须的. @Retention标识了注解在哪个阶段起作用，参数SOURCE，CLASS，RUNTIME中的一个，其中SOURCE表示注解将会被编译器丢弃（忽略），CLASS表示注解将会被JVM丢弃（忽略），RUNTIME表示注解可以再运行时起作用，并一直保留，所以可以通过反射读取注解信息。也就是说，SOURCE在complie time起作用，javac编译完就丢弃，比如@SuppressWarnings @Override就用在启动编译的时候。比如:
 有一个类库叫mapstruct，其中@Mapper注解用在接口上对应@Retentation(RetentationPolicy.CLASS)。在它编译打包后，会在target/generated-sources/annotations/下生成对应的实现类的java文件，然后生成实现类的class文件。
 
 那么问题来了，SOURCE也是在编译时起作用，究竟在那个阶段呢？以下这张图展示了Java的编译过程：
@@ -35,7 +35,7 @@ end
 在Annotation Processing的过程之后，RetentationPolicy.SOURCE就被丢弃了，同时RetentationPolicy.CLASS的注解要还保留在class文件中。
 
 
-## Useing javac to Process Annotations
+## Using javac to Process Annotations
 自定义注解之后，如果不对其进行处理，那么注解不会比注释更有用。
 
 如果要在编译时期做一些事情(利用注解生成代码), 这时就需要用到`Annotation Processor`, 具体的做法是继承AbstractProcessor, 然后实现其process方法.
@@ -46,7 +46,7 @@ Annotation Processor机制是什么？.
 ## Runtime Annotations Processing
 在运行时通过反射完成一些操作的话，不是继承AbstractProcessor，只需要通过Java反射API中扩展的getAnnotation(xxx.class)方法即可。
 
-比如，通过自定义注解@Query(...)来实现动态查询，事先在一个类Criteria，其中声明好查询条件的字段Fields，都用@Query装饰。然后写这样一个方法，接收Criteria对象criteria，criterai.getClass().getDeclaredFields()，遍历这个数组，然后对数组中的每个Field，field.setAccessible(true)，保证对private的访问。然后field.getAnnotation(Query.class)获得当前这个@Query传入的参数，确定查询条件是等于，like等等。根据filed.getName()获得字段名称，filed.get(criteria)获得对象中此属性的值。
+比如，通过自定义注解@Query(...)来实现动态查询，事先在一个类Criteria，其中声明好查询条件的字段Fields，都用@Query装饰。然后写这样一个方法，接收Criteria对象criteria，criteria.getClass().getDeclaredFields()，遍历这个数组，然后对数组中的每个Field，field.setAccessible(true)，保证对private的访问。然后field.getAnnotation(Query.class)获得当前这个@Query传入的参数，确定查询条件是等于，like等等。根据filed.getName()获得字段名称，filed.get(criteria)获得对象中此属性的值。
 ```java
 import cn.hutool.core.util.ObjectUtil;
 import com.lee.annotation.Query;

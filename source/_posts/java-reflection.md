@@ -1,5 +1,5 @@
 ---
-title: java-reflection
+title: Java反射
 date: 2021-08-12 17:46:37
 categories:
 - Java
@@ -15,14 +15,14 @@ The API accommodates applications that need access to either the public members 
 
 
 # 反射原理
-简言之，反射是为了在运行时获得程序中类的属性和方法等信息。在Java中程序中的类在编译时期就确定下来了，反射机制可以动态创建对象并调用其members，对象的类型在编译时是未知的，在运行时才知道运行的对象是谁。
+简言之，反射是为了在运行时获得程序中类的属性和方法等信息。在Java中程序中的类在编译时期就确定下来了，反射机制可以动态创建对象并调用其members. Python对象的类型在编译时是未知的，在运行时才知道运行的对象是谁。
 
 反射应用的三种形式，总结起来分别是：
 1. 运行时得到类的信息
 2. 类型转换
 3. instanceof
 
-Java中使用反射遵循以下流程。java.lang.reflect包中有Field, Method和Constructor（它们都继承AccessibleObject，实现了Member接口），在运行时JVM为类创建Field，Method和Constructor等的对象。你可以使用Constructor创建新对象，使用某个特定的Method对象调用invoke方法，或者使用Class.forName（当你没有对象的时候，你可以使用Class.forName得到类，当你拥有对象的时候，你可以通过该对象调用getClass，他们的结果是等价的），getSuperClass，getFields，getMethods，getConstructors来得到这些Member对象的数组。
+Java中使用反射遵循以下流程。java.lang.reflect包中有Field, Method和Constructor（它们都继承AccessibleObject，实现了Member接口），在运行时JVM为类创建Field，Method和Constructor等的对象。你可以使用Constructor创建新对象，使用某个特定的Method对象调用invoke方法，或者使用Class.forName（当你没有对象的时候，你可以使用Class.forName得到类，当你拥有对象的时候，你可以通过该对象调用getClass方法，他们的结果是等价的），getSuperClass，getFields，getMethods，getConstructors来得到这些Member对象的数组。
 
 以上一直在强调“动态”，但是归根结底Java仍然是一门静态语言，与Python才是真动态，在Java里所有的类在编译时期就已经完全确定了，不会再增加新的类，但是Python不一样，在运行时才知道某个类的存在，可以在运行时往类中增加额外的属性，不像Java要使用什么必须先声明出来。
 

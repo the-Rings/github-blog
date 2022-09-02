@@ -18,13 +18,11 @@ categories:
 1. 安装Node.js (默认安装了npm)
 
 2. npm的配置, 对前端不是很熟, 这里需要记录一下
-
    - 在Windows默认的用户目录下, 新建`C:\Users\your-user-name\.npmrc`文件
-
      ```
        registry=https://registry.npm.taobao.org
-       prefix=D:\apps\nodejs\node_global
-       cache=D:\apps\nodejs\node_cache
+       prefix=D:\your-path\nodejs\node_global
+       cache=D:\your-path\nodejs\node_cache
     ```
 
 3. 安装`npm install -g hexo`
@@ -127,12 +125,24 @@ categories:
 ## 特殊语法
 1. 站内文章链接{% post_link file_name "display name" %}
 
-## 日常操作流程
-
+## 在一台新的机器上克隆项目的流程
+```shell
+git clone your-github-blog-url
+cd your-github-blog-root-path
+# set your-node-module-path to PATH
+npm install -g hexo
+# 从package-lock.json安装所有包
+npm ci
+hexo clean
+# 如果出现NEXT主题的logo说明安装成功
+# 如果出现“hexo: 无法加载文件 ******.ps1”的错误，可能要以管理员身份运行cmd，“set-ExecutionPolicy RemoteSigned”
+```
+#### 日常操作流程
 1. 写博客`hexo new post [new-blog-name]`, 在`source/_post/`下就生成了一个新的博客文件, 可以用其他markdown编辑工具来编写, 比如Typora
 2. 在博客文档的开头可以设置标签和分类
 3. 写完之后, 提交源码`git add `&`git commit`&`git push`
 4. 部署发布`hexo clean`&`hexo generate`&`hexo deploy`
+
 
 
 # Troubleshooting

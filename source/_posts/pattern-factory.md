@@ -2,10 +2,9 @@
 title: 抽象工厂
 date: 2021-07-03 20:01:57
 categories:
-- Java
 - Pattern
 tags:
-- factory pattern
+- Factory Pattern
 ---
 
 # 动态工厂
@@ -14,9 +13,9 @@ Factories: Encapsulating Object Creation
 
 A Factory forces object creation to occur through a common point, preventing creational code from appearing throught your system.
 {% endblockquote %}
-工厂模式其实是封装对象的创建过程. 强制将让对象的创建发生在一个统一的地方, 阻止代码散落在系统中.
+**工厂模式其实是封装对象的创建过程. 强制将让对象的创建发生在一个统一的地方, 阻止代码散落在系统中.**
 
-静态工厂就不说了, 就是通过传入对象的标识, 在创建方法内部判断条件new出目标对象.
+静态工厂简单, 就是通过传入对象的标识, 在创建方法内部判断条件new出目标对象.
 那么动态工厂, 就更加解耦, 通过传入的标识, 反射得到类, 然后`xxx.getNewInstance()`, 例子如下:
 ```java
 class Shape {
@@ -59,26 +58,28 @@ public class DynamicFactory implements ShapeFactory {
 ```
 
 # 抽象工厂
-抽象工厂是在工厂的基础上又封装了一层, 即将工厂传入
+抽象工厂是在工厂的基础上又封装了一层, 即将"工厂"对象作为参数传入，然后
 ```java
 class AbstractFactory {
-    Supplier<Player> player;
-    Supplier<Obstacle> obstacle;
+  Supplier<Player> player;
+  Supplier<Obstacle> obstacle;
 }
 
 class ConcreteFactory1 extends AbstractFactory {
-    ConcreteFactory() {
-        player = Player1::new;
-        obstacle = Obstacle1::new;
-    }
+  ConcreteFactory() {
+    player = Player1::new;
+    obstacle = Obstacle1::new;
+  }
 }
+
 public class GameEnvironment {
   private Player p;
   private Obstacle ob;
+
   public getInstance(AbstractFactory factory) {
-        p = factory.player.get();
-        ob = factory.obstacle.get();
-    }
+    p = factory.player.get();
+    ob = factory.obstacle.get();
+  }
 }
 
 ```

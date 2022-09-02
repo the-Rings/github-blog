@@ -1,5 +1,5 @@
 ---
-title: ArrayList
+title: ArrayList.remove
 date: 2021-11-15 16:32:10
 categories:
 - Java
