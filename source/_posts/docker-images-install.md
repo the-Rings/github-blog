@@ -45,8 +45,8 @@ docker pull mysql:5.7
 
 # sudo docker images 查看本地镜像
 ```
-2. 启动容器，并配置端口映射、挂载文件
-```
+2. 启动容shell器，并配置端口映射、挂载文件
+```shell
 docker run -p 3306:3306 --name mysql \
 -v /mydata/mysql/log:/var/log/mysql \
 -v /mydata/mysql/data:/var/lib/mysql \
@@ -59,16 +59,16 @@ docker run -p 3306:3306 --name mysql \
 -v /mydata/mysql/log:/var/log/mysql 将日志文件挂载到主机
 -e 初始化root用户密码
 3. 查看容器启动情况
-```
+```shell
 sudo docker ps
 ```
 4. 进入docker容器内部查看
-```
+```shell
 sudo docker exec -it [container-id] /bin/bash
 ```
 5. mysql字符编码配置
 进入主机挂载mysql的文件目录
-```
+```shell
 cd /mydata/mysql/conf
 vim my.cnf
 
@@ -155,7 +155,7 @@ sudo docker update elasticsearch --restart=always
 
 ## 安装Kibaba
 1. 下载
-```
+```shell
 sudo docker pull kibana:7.4.2
 sudo docker run --name kibana -e ELASTICSEARCH_HOSTS=http://192.168.56.10:9200 -p 5601:5601 -d kibana:7.4.2
 ```
@@ -164,3 +164,70 @@ sudo docker run --name kibana -e ELASTICSEARCH_HOSTS=http://192.168.56.10:9200 -
 sudo docker update kibana --restart=always
 # 设置容器的开机启动
 ```
+
+
+## 安装Nginx
+1. 下载
+```
+sudo docker pull nginx:1.20.2
+```
+2. 试运行并复制出配置
+```shell
+sudo docker run -p 80:80 --name nginx -d nginx:1.20.2
+sudo mkdir -p /mydata/nginx/conf
+# 复制nginx的默认配置到mydata文件下
+sudo docker container cp nginx:/etc/nginx/. /mydata/nginx/conf/
+# 停止删除nginx容器
+sudo docker stop nginx
+sudo docker rm nginx
+```
+3. 配置启动nginx
+```shell
+sudo docker run -p 80:80 --name nginx \
+-v /mydata/nginx/html:/usr/share/nginx/html \
+-v /mydata/nginx/logs:/var/log/nginx \
+-v /mydata/nginx/conf:/etc/nginx \
+-d nginx:1.20.2
+```
+4. Always Start
+```shell
+sudo docker update nginx --restart=always
+# 设置容器的开机启动
+```
+
+## 安装Nacos
+1. 下载
+```shell
+sudo docker pull nacos/nacos-server:2.0.3
+```
+nacos版本要与spring-cloud-alibaba/spring-cloud/spring-boot的版本是兼容的，可以查看https://github.com/alibaba/spring-cloud-alibaba/wiki/版本说明
+2. 创建文件夹
+```shell
+mkdir -p /mydata/nacos/logs
+mkdir -p /mydata/nacos/init.d
+```
+3. 启动
+```shell
+sudo docker  run --name nacos \
+-p 8848:8848 \
+-p 9848:9848 \
+-p 9849:9849 \
+--privileged=true \
+--restart=always \
+-e JVM_XMS=256m \
+-e JVM_XMX=256m \
+-e MODE=standalone \
+-v /mydata/nacos/logs:/mydata/nacos/logs \
+-v /mydata/nacos/init.d/custom.properties:/mydata/nacos/init.d/custom.properties \
+-d nacos/nacos-server:2.0.3
+```
+其中`-e PREFER_HOST_MODE=hostname`可以将其配置为支持域名模式，默认是ip模式
+8848端口用来HTTP服务，9848和9849用来服务发现和注册，所以也是需要映射到宿主机的端口的
+4. Always Start
+```shell
+sudo docker update nacos --restart=always
+# 设置容器的开机启动
+```
+
+
+

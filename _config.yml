@@ -3,7 +3,7 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 长天逸夫
+title: 免
 subtitle: And you run, cause Life is too short.
 description: 软件开发一直追求更加高效, 更加已维护甚至更易扩展的方式
 keywords:
@@ -13,7 +13,7 @@ timezone: Asia/Shanghai
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://the-rings.gitee.io
+url: https://the-rings.github.io/
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -122,5 +122,5 @@ tag_plantuml:
 ## 注意：每次hexo deploy就要在gitee上点击一次“部署”（真菜）
 deploy:
   type: git
-  repo: git@gitee.com:the-rings/the-rings.git
+  repo: git@github.com:the-Rings/the-Rings.github.io.git
   branch: main
