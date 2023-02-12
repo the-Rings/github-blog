@@ -24,22 +24,21 @@ tags:
  - Around Advice, 这里应该叫做拦截器比较好, Interceptor. 它也可以完成Before Advice和After Advice的功能.
  - Introduction
  
-
 ### Aspect
 Aspect是对以上三者进行封装的AOP概念.
 
 ---
 ## Spring AOP
-AOP是一种理论, Spring AOP是针对Spring框架落地的一种AOP实现. Spring的设计哲学是简单而强大, 用20%的AOP的支持来满足80%的场景.
+AOP是一种理论, Spring AOP是针对Spring框架落地的一种AOP实现.
 
 ### 动态代理与CGLIB(基于ASM)
 {% post_link pattern-proxy-and-dynamic '动态代理' %}，这里不在赘述.
 结合Spring AOP来说, 动态代理实现InvocationHandler的类是我们实现横切逻辑的地方, 它是横切逻辑的载体, 作用和Advice是一样的. 这就理解了Advice是什么了.
 动态代理虽好, 但是不能满足所有需求. 因为动态代理机制只能对实现了相应接口的类使用, 如果某个类没有实现任何接口, 就无法使用动态代理机制为其生成相应的动态代理对象.
 
-使用动态字节码生成技术扩展对象行为的原理是, 我们可以对目标对象进行继承扩展, 为其生成相应的子类, 而子类可以通过重写来扩展父类的行为, 只要将横切逻辑放的实现放到子类中, 然后让系统使用扩展后的目标对象的子类, 就可以达到相同的目的了. CGLIB(基于ASM)可以对实现了某种接口的类, 或者没有实现任何接口的类都可以进行扩展.
+使用CGLIB动态字节码生成技术扩展对象行为的原理是, 我们可以对目标对象进行继承扩展, 为其生成相应的子类, 而子类可以通过重写来扩展父类的行为, 只要将横切逻辑放的实现放到子类中, 然后让系统使用扩展后的目标对象的子类, 就可以达到相同的目的了. CGLIB(基于ASM)可以对实现了某种接口的类, 或者没有实现任何接口的类都可以进行扩展.
 通常我们会直接使用`net.sf.cglib.proxy.MethodInterceptor`接口(扩展了net.sf.cglib.proxy.Callback接口): 
-```java
+```Java
 class Requestable {
     public void request(){
         System.out.println("OK");
@@ -74,7 +73,7 @@ proxy.request();
 这里是使用Enhancer来演示在对象中加入横切逻辑, 在后续的内容中我们将会使用经过封装的更高级的Spring AOP工具, Advisor
 
 对于Joinpoint, Spring AOP仅支持方法级别的Joinpoint, 更确切的说, 仅支持方法执行(Method Execution)类型的Joinpoint, 原因有以下几点:
- - Spring AOP设计理念是简单而强大
+ - Spring AOP设计理念是，简单而强大
  - 对于类属性Field级别的Joinpoint, 完全可以使用getter/setter方法的拦截来达到同样的目的
  - 如果要求十分特殊, 借助AspectJ即可(当然即使是AspectJ这样支持很多Joinpoint类型的AOP实现产品, 也无法保证能捕捉到程序流程中的任何一个点)
 
@@ -201,7 +200,6 @@ public interface AopProxyFactory {
 	 * @throws AopConfigException if the configuration is invalid
 	 */
 	AopProxy createAopProxy(AdvisedSupport config) throws AopConfigException;
-
 }
 
 ```
@@ -213,12 +211,7 @@ if(config.isOptimize || config.isProxyTargetClass() || ...) {
     // 创建JdkDynamicAopProxy实例, 返回
 }
 ```
-以下内容定格在177页, 关于AOP的剩余内容以后在补充.
-
-
-一个类如果不声明, 默认的构造方法, 那么他到底有没有默认的构造方法? 没有
-一个类声明了默认的构造方法, 但是没有写访问控制符, 那么这个访问控制符是什么? 
-一个类声明了默认的构造方法, 但是没有写访问控制符, 为什么通过Class.forName(...).getConstructor()会抛出NoSuchMethodException?
+以下内容定格在177页《Spring揭秘》, 关于AOP的剩余内容以后在补充.
 
 
 

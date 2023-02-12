@@ -16,15 +16,13 @@ In recursion, one method calls itself over and over until it reaches a terminati
 
 从中体会到几点: Java中使用递归调用来执行整个链条, 链条是一个List, 这个List中保存着每个子类重写父类的同一个方法, 但是它们实现逻辑不同. 
 
-
 在Spring AOP中, 对于某个Joinpoint. 要加入一个横切逻辑, 需要定义一个类实现MethodInterceptor, 重写其invoke方法, 在invoke方法体中添加横切逻辑. 其方法体中必须调用`invocation.proceed()`方法, 不然会造成"短路". 
 
 有多个MethodInterceptor实现的时候, 要按照逐个执行它们的invoke方法(横切逻辑), 这些匹配到的interceptor, 最终集中到了`ReflectiveMethodInvocation.interceptorsAndDynamicMethodMatchers`这个List中, 将在`proceed()`方法中执行. 这里用到了递归, 整体是"责任链模式"
 
 附上ReflectiveMethodInvocation源码来解释
 
-```java
-
+```Java
 /**
  * Spring's implementation of the AOP Alliance
  * {@link org.aopalliance.intercept.MethodInvocation} interface,

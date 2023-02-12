@@ -58,6 +58,7 @@ docker run -p 3306:3306 --name mysql \
 -p 是将容器的3306映射到主机的3306
 -v /mydata/mysql/log:/var/log/mysql 将日志文件挂载到主机
 -e 初始化root用户密码
+
 3. 查看容器启动情况
 ```shell
 sudo docker ps

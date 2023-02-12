@@ -30,8 +30,19 @@ Java中使用反射遵循以下流程。java.lang.reflect包中有Field, Method�
 
 反射最重要的用途就是开发各种通用框架。很多框架（比如 Spring）都是配置化的（比如通过 XML 文件配置 Bean），为了保证框架的通用性，它们可能需要根据配置文件加载不同的对象或类，调用不同的方法，这个时候就必须用到反射，运行时动态加载需要加载的对象。
 
-## Class.forName(...)
-反射中最常用的方法, 它与XXX.class.getClass()等价, 不做过多介绍
+## 反射创建对象
+Java创建对象有两种方式，一个是new，一个是反射
+反射创建对象，第一步是获取Class，第二步获取构造器，第三步构造器newInstance()
+```Java
+Class clazz = Class.forName("xxx.xxx");
+Constructor ctor = class.getConstructor();
+clazz obj = ctor.newInstance();
+```
+>注：其中获取到Class有三种方式：
+>- Class.forName("xxx.xxx")
+>- 对象.getClass
+>- 类.Class
+>这三种方式没有性能区别
 `Class.forName(...).getContructor()`只能获取到`Member.PUBLIC`的构造方法, 一个类如果不声明任何构造方法就会由一个默认的构造方法, 如果这个类是`Member.PUBLIC`那么默认的构造方法也是, 如果这个类是包访问权限, 那么默认构造器也是包访问权限啊
 
 ## Method Invoke

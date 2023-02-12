@@ -3,6 +3,7 @@ title: Spring IoC基础
 date: 2021-09-28 15:08:10
 categories: 
 - Spring
+- IoC
 ---
 
 为了方便, 通篇的例子都采用这个模型, 订单, 订单产品, 订单地址的关系, 订单需要依赖订单地址和产品等信息. 一般需要在构造函数中构造Order
@@ -35,16 +36,15 @@ IoC中文被翻译为"控制反转", 一直都让我一头雾水, 软件工程�
 当人们把很多项目放在一起比较发现, 这些"new操作", 其实是一种高级别的相似, 那么就可以"抽出它们像的部分", 让机器帮助我们干这些活.于是, 有人能够把我们需要的某个依赖对象"主动"送过来, 而不是我们自己去new, 所以就是"控制反转".
 达到的目的就是"依赖注入", 将依赖对象注入到被注入对象中.
 注入的方式有三种, 构造器注入(推荐), setter注入(推荐), Field注入(不推荐)
+整个IoC的过程可以简化为：加载解析XML > 封装BeanDefination > 实例化 > 放到容器中 > 从容器中Get
 
-
-## IoC Service Provider与BeanFactory支持的XML配置
+## IoC Service Provider
 **通常被大家称为IoC容器**. IoC Service Provider职责只有两个, 业务对象的构建和业务对象之间的依赖绑定. 也就是记录依赖关系, 据此生成业务对象.
-
+既然是容器，那么容器使用什么数据结构存储呢？必然是Map，Map的key的类型可以是String/Class，储存的value首先得是Object，另外Spring还设计了BeanFactory和BeanDefination等类型
 **Spring的IoC容器是一个IoC Service Provider, 提供了两种类型的支持: BeanFactory和ApplicationContext. 其中ApplicationContext基于BeanFactory, 提供了事件发布等功能.**
-
 Spring提倡使用POJO, 每个业务对象看做是一个JavaBean. 只有纳入Spring管理的这些类才能看做是业务对象, 如何纳入Spring管理, 就是这些类上有`@Configuration`, `@Component`, `@Service`等注解. 要是定义了一个普通的类, 那么这并不能归IoC容器管辖.
 
-很久以前, 我们基本上都使用XML进行依赖关系的记录, 通过XML很好的给我们展现了, 依赖的树形关系, 先完成类的声明, 然后对应编写XML, 比如: 
+很久以前, 我们基本上都使用XML进行依赖关系的记录, 通过XML很好的给我们展现了,依赖的树形关系, 先完成类的声明, 然后对应编写XML, 比如: 
 ```xml
 <bean id="order" class="..Order">
     <property name="orderItem">
@@ -58,13 +58,47 @@ Spring提倡使用POJO, 每个业务对象看做是一个JavaBean. 只有纳入S
 <bean id="amazonOrderAddress" class="..impl.AmazonOrderAddress"></bean>
 ```
 
-以下列举了BeanFactory接口源码(重载方法没有列出)
-```java
+`org.springframework.beans.factory.BeanFactory`是Spring IoC中最重要类，注释中的第一句话：*The root interface for accessing a Spring bean container.*
+BeanFactory接口，部分源码。其中注释中有句话很重要，*Bean factory implementations should support the standard bean lifecycle interfaces as far as possible*
+```Java
 package org.springframework.beans.factory;
 /**
  * The root interface for accessing a Spring bean container.
  * This is the basic client view of a bean container;
  * 
+ * ....
+ * 
+ * <p>Bean factory implementations should support the standard bean lifecycle interfaces
+ * as far as possible. The full set of initialization methods and their standard order is:
+ * <ol>
+ * <li>BeanNameAware's {@code setBeanName}
+ * <li>BeanClassLoaderAware's {@code setBeanClassLoader}
+ * <li>BeanFactoryAware's {@code setBeanFactory}
+ * <li>EnvironmentAware's {@code setEnvironment}
+ * <li>EmbeddedValueResolverAware's {@code setEmbeddedValueResolver}
+ * <li>ResourceLoaderAware's {@code setResourceLoader}
+ * (only applicable when running in an application context)
+ * <li>ApplicationEventPublisherAware's {@code setApplicationEventPublisher}
+ * (only applicable when running in an application context)
+ * <li>MessageSourceAware's {@code setMessageSource}
+ * (only applicable when running in an application context)
+ * <li>ApplicationContextAware's {@code setApplicationContext}
+ * (only applicable when running in an application context)
+ * <li>ServletContextAware's {@code setServletContext}
+ * (only applicable when running in a web application context)
+ * <li>{@code postProcessBeforeInitialization} methods of BeanPostProcessors
+ * <li>InitializingBean's {@code afterPropertiesSet}
+ * <li>a custom {@code init-method} definition
+ * <li>{@code postProcessAfterInitialization} methods of BeanPostProcessors
+ * </ol>
+ *
+ * <p>On shutdown of a bean factory, the following lifecycle methods apply:
+ * <ol>
+ * <li>{@code postProcessBeforeDestruction} methods of DestructionAwareBeanPostProcessors
+ * <li>DisposableBean's {@code destroy}
+ * <li>a custom {@code destroy-method} definition
+ * </ol>
+ * ....
  */
 public interface BeanFactory {
 	String FACTORY_BEAN_PREFIX = "&";
@@ -83,24 +117,35 @@ public interface BeanFactory {
 	String[] getAliases(String name);
 }
 
-/** 
-  * 其中"prototype", "singleton"是bean的scope属性两种类型值
-  * 拥有prototype scope的bean定义, 容器在接到该类型对象的请求时, 会每次都重新生成一个新的对象实例给请求方
-  * 这有助于理解BeanFactory中两个方法的意义
-  **/
 ```
+>注：其中`prototype`, `singleton`是Spring Bean的scope的两个范围，其次还有`request`和`session`，这两个用的少
+>- prototype, 容器在接到该类型对象的请求时, 会每次都重新生成一个新的对象实例给请求方
+>- singleton，即单例，全局只有一个对象，这是Spring默认的scope
+
 在拥有了BeanFactory之后, 我们将"生产图纸"交给BeanFactory, 让其为我们生产一个业务对象即可:
-```java
-BeanFactory container = new XmlBeanFacotry(new ClassPathResource("XML_PATH"));
-/**
- * 或者使用ApplicationContext
- * ApplicationContext container = new ClassPathXmlApplication("XML_PATH");
-**/
-Order order = (Order)container.getBean("order");
+```Java
+BeanFactory container = new XmlBeanFacotry(new ClassPathResource("YOUR_XML_PATH"));
+Order order = (Order) container.getBean("order");
 order.persistOrderData();
 ```
+或者使用ApplicationContext
+```Java
+ApplicationContext container = new ClassPathXmlApplication("YOUR_XML_PATH");
+Order order = (Order) container.getBean("order");
+order.persistOrderData();
+```
+>注：不仅仅是XML这种格式，.json/.properties/.yml都可以当作配置文件来定义Bean，只要做好规范（接口）即可，对应`org.springframework.beans.factory.support.BeanDefinitionReader`接口，不同类型的配置文件就有了规范
+XML定义的Bean最终被“翻译”为`BeanDefinition`的一个个的实例，将这些BeanDefinition进行实例化流程中，Spring加入了很多可扩展的地方，比如：PostProcessor
+- BeanFactoryPostProcessor，增强（修改）BeanDefination信息，在xml生成BeanDefinition阶段起作用
+- BeanPostProcessor，增强（修改）Bean信息，在Bean实例化阶段起作用
+- 等等
 
-综上, IoC容器, 或者具体点BeanFactory, 完成了, 注册/绑定->生产对象, 三个步骤. 这就是IoC的所有目的了.每个业务对象作为个体, 在Spring的XML配置文件中是</bean>元素一一对应的, 只要我们了解了单个业务对象是如何配置的, 那么剩下的就是"依葫芦画瓢".
+接下来，明确两个概念，一个是Instantiate（实例化），一个是Initialize（初始化），对应Python中的`__new__()`和`__init__()`
+- Instantiate，是调用构造方法，在堆中开辟一个内存空间，属性赋默认值。
+- Initialize，是调用init-method，为对象赋值，比如在XML中定义Bean的时候，指定init-method
+
+### BeanFactory和FactoryBean的区别
+实现了FactoryBean接口的类，将作为一个Bean放入SpringIOC容器中，然后在某个地方调用FactoryBean.getObject()方法来进行对象的实例化。FactoryBean是Spring框架的一个扩展，方便用户自己灵活进行Bean的创建
 
 ### 工厂方法
 这里额外介绍一下工厂模式. 在强调面向接口编程的同时, 有一点需要注意: **虽然对象可以通过声明接口来避免对特定接口实现类的过度耦合**, 但总归需要一种方式将声明依赖接口的对象与接口实现类关联起来,. 只依赖一个不做任何事情的接口是没有任何用处的.
@@ -137,22 +182,12 @@ public class Foo {
 ```
 factory-method指定工厂方法名, 然后容器调用静态方法getInstance. 也就是说, 为对象foo注入的bar对象实际是BarInterfaceImpl的实例.
 
-## 容器背后的秘密
-Spring IoC容器实现其功能, 基本上可以按照类似的流程分为两个阶段: 容器启动阶段和Bean实例化阶段
-> 容器启动阶段: 加载配置 > 分析配置信息 > 装备到BeanDefinition > 其他后处理 ...
-- 容器需要依赖BeanDefinitionReader对加载的Configuration MetaData就行解析和处理, 最后注册到BeanDefinitionRegistory
-> Bean实例化阶段: 实例化对象 > 装配依赖 > 生命周期回调 > 对象其他处理 > 注册回调接口 ...
-- 所有的Bean定义都通过BeanDefinition的方式注册到了BeanDefinitionRegistry中. 当某个请求通过容器getBean时, 就会触发第二阶段
-
-第一阶段是图纸装配, 第二阶段是使用装配好的生产线生产具体的产品.
-
-### 图纸装配
-"图纸装配"从一般的逻辑上来讲要经历, 这几个阶段: 读文件 -> 将文件中的占位符替换 -> 文件中的字符串进行类型装换
-Spring容器提供了一种叫做BeanFactoryProcessor接口, 一个容器可以有多个BeanFactoryPostProcessor. 比如: 
-- PropertyPlaceholderConfigurer, 作用是将占位符替换为properties文件中声明的值.
-- CustomEditorConfigurer, 将XML格式文件中读取的字符串形式的值进行转换. 具体实现是通过Spring内部提供的JavaBean的PropertyEditor来帮助进行String类型到其他类型的转换, 比如: StringArrayPropertyEditor(将逗号分隔的字符串转为String[]), ClassEditor(根据String类型的class名称, 转换为相应的class对象, 相当于Class.forName(String))等等.
-
-> 插一句, 如果让我去组织这些Processor的话, 我会采用Django框架中middleware的做法, 首先按照顺序列好这些Processor, 然后一个一个执行, PropertyPlaceholderConfigurer > CustomEditorConfigurer > ...等等, 每个Processor完成一个步骤, 最后装配成功. 我想Spring框架也会采用这样的办法, 毕竟我们在将Bean注册到Spring容器的时候, 都是可以设置顺序的.
+## 容器启动过程分析
+Spring IoC容器实现其功能, 基本上可以按照类似的流程分为两个阶段: 容器启动阶段，Bean实例化和初始化阶段
+- 容器启动阶段: 加载环境配置 > 分析配置信息 > 装备到BeanDefinition > PostProcessor
+- Bean实例化和初始化阶段: 实例化 > 填充属性 > 初始化
+用一个流程图来具体展示：
+[Spring IOC执行流程](https://www.processon.com/diagraming/63dcfa02392a4b25fec64888)
 
 ### 生产产品
 容器启动之后, 并不会马上进行实例化Bean. 容器现在拥有对象的BeanDefinition来存储实例化必要信息. 当通过BeanFactory.getBean()方法来请求某个对象实例时, 才可能触发Bean实例化阶段的活动. 
@@ -161,7 +196,7 @@ Spring容器提供了一种叫做BeanFactoryProcessor接口, 一个容器可以�
 容器在内部实现的时候, 采用"策略模式(Strategy Pattern)"来决定使用何种方式初始化bean实例, 通常是通过反射或者CGLIB动态字节码来生成bean实例, 或者其子类. 默认情况下, 容器采用的是CglibSubclassingInstantiationStrategy.
 
 按照正常的逻辑, 容器只需要根据BeanDefintion取得实例化信息, 结合CglibInstantiationStrategy返回对象实例. 但是, 这里的做法不是直接返回构造完成的实例, 而是以BeanWrapper对构造完成的对象实例进行包裹, 返回相应的BeanWrapper实例. 
-```java
+```Java
 Object order = Class.forName("package.name.Order").newInstance();
 Object orderItem = Class.forName("package.name.AmazonOrderItem").newInstance();
 Object orderAddress = Class.forName("package.name.AmazonOrderAddress").newInstace();
