@@ -49,3 +49,7 @@ Perferences > Settings
     - `Alt+Shift+W` Surround with HTML tag
 #### Move Cusor
     - `Alt+Left` and `Alt+Right`
+#### Layout
+    - `Alt+Shift+2` Columns 2, and `Alt+Shift+1` return 1
+    - `Alt+Shift+3` Columns 3, and `Alt+Shift+1` return 1
+    - ...

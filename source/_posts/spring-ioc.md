@@ -182,12 +182,23 @@ public class Foo {
 ```
 factory-method指定工厂方法名, 然后容器调用静态方法getInstance. 也就是说, 为对象foo注入的bar对象实际是BarInterfaceImpl的实例.
 
-## 容器启动过程分析
-Spring IoC容器实现其功能, 基本上可以按照类似的流程分为两个阶段: 容器启动阶段，Bean实例化和初始化阶段
-- 容器启动阶段: 加载环境配置 > 分析配置信息 > 装备到BeanDefinition > PostProcessor
-- Bean实例化和初始化阶段: 实例化 > 填充属性 > 初始化
-用一个流程图来具体展示：
-[Spring IOC执行流程](https://www.processon.com/diagraming/63dcfa02392a4b25fec64888)
+## 容器背后的秘密
+Spring IoC容器实现其功能, 基本上可以按照类似的流程分为两个阶段: 容器启动阶段和Bean实例化阶段
+> 容器启动阶段: 加载配置 > 分析配置信息 > 装备到BeanDefinition > 其他后处理 ...
+- 容器需要依赖BeanDefinitionReader对加载的Configuration MetaData就行解析和处理, 最后注册到BeanDefinitionRegistory
+> Bean实例化阶段: 实例化对象 > 装配依赖 > 生命周期回调 > 对象其他处理 > 注册回调接口 ...
+- 所有的Bean定义都通过BeanDefinition的方式注册到了BeanDefinitionRegistry中. 当某个请求通过容器getBean时, 就会触发第二阶段
+
+第一阶段是图纸装配, 第二阶段是使用装配好的生产线生产具体的产品.
+> 注：{% post_link pattern-proxy-and-dynamic '结合源码分析IOC容器的启动过程' %}
+
+### 图纸装配
+"图纸装配"从一般的逻辑上来讲要经历, 这几个阶段: 读文件 -> 将文件中的占位符替换 -> 文件中的字符串进行类型装换
+Spring容器提供了一种叫做BeanFactoryProcessor接口, 一个容器可以有多个BeanFactoryPostProcessor. 比如: 
+- PropertyPlaceholderConfigurer, 作用是将占位符替换为properties文件中声明的值.
+- CustomEditorConfigurer, 将XML格式文件中读取的字符串形式的值进行转换. 具体实现是通过Spring内部提供的JavaBean的PropertyEditor来帮助进行String类型到其他类型的转换, 比如: StringArrayPropertyEditor(将逗号分隔的字符串转为String[]), ClassEditor(根据String类型的class名称, 转换为相应的class对象, 相当于Class.forName(String))等等.
+
+> 插一句, 如果让我去组织这些Processor的话, 我会采用Django框架中middleware的做法, 首先按照顺序列好这些Processor, 然后一个一个执行, PropertyPlaceholderConfigurer > CustomEditorConfigurer > ...等等, 每个Processor完成一个步骤, 最后装配成功. 我想Spring框架也会采用这样的办法, 毕竟我们在将Bean注册到Spring容器的时候, 都是可以设置顺序的.
 
 ### 生产产品
 容器启动之后, 并不会马上进行实例化Bean. 容器现在拥有对象的BeanDefinition来存储实例化必要信息. 当通过BeanFactory.getBean()方法来请求某个对象实例时, 才可能触发Bean实例化阶段的活动. 
@@ -404,4 +415,3 @@ classpath-scanning由`<context:component-scan>`决定. `<context:component-scan>
 
 
 学习Spring框架, 是不是要抓住Spring中几个大的接口来进行, 比如BeanFactory, BeanPostProcessor等, 毕竟是面向接口的编程. 
-

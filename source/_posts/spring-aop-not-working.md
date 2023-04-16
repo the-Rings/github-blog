@@ -33,4 +33,4 @@ public class TreasuryFuturesBinJob {
 }
 ```
 ### 不生效的原因分析
-Spring利用动态代理实现AOP，Runtime时动态生成代理类，加载到JVM中
+这些注解都是利用Spring AOP机制起作用，Spring AOP要使用动态代理来实现，无论是JDK动态代理，还是CGLIB动态代理，都会生成代理类。在IOC容器管理Bean对象管理的过程中，有些Bean对象可能已经不是原始的Bean对象了。

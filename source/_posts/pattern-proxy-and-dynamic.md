@@ -18,49 +18,24 @@ tags:
 SubjectImpl不会出现在SubjectProxy类中，取而代之的是ISubject被注入到SubjectProxy中，作为一个“桥梁”，就满足了调用者和实现者的解耦
 
 > 没有代理
-```java
-public class Client {
-    private ISubject subject;
-    Client(ISubject subject){
-        this.subject = subject;
-    }
-
-    public void doSomething() {
-        String url = ...;
-        subject.request(url);
-    }
-    public static void main(String[] args) {
-        Client client = new Client(new SubjectImpl());
-        client.doSomething();
-    }
-}
+```Java
 public class SubjectImpl implements ISubject {
     @Override
     public String request(url) {
         return "OK" + url;
     }
 }
-```
-> 增加了代理之后
-```Java
-public class Client {
-    private ISubject subject;
-    Client(ISubject subject){
-        this.subject = subject;
-    }
 
-    public void doSomething() {
+public class Client {
+    public static void main(String[] args) {
+        ISubject subject = new SubjectImpl();
         String url = ...;
         subject.request(url);
     }
-    public static void main(String[] args) {
-        // 这里增加了一个多余的强制转换
-        ISubject proxy = (ISubject)new SubjectProxy(new SubjectImpl());
-        Client client = new Client(proxy);
-        client.doSomething();
-    }
 }
-
+```
+> 增加了代理之后
+```Java
 public class SubjectImpl implements ISubject {
     @Override
     public String request(url) {
@@ -69,16 +44,27 @@ public class SubjectImpl implements ISubject {
 }
 
 public class SubjectProxy implements ISubject {
-    private ISubject subject;
-    SubjectProxy(ISubject subject){
-        this.subject = subject;
+    ISubject subject = new SubjectImpl();
+
+    public static ISubject getProxy() {
+        return new SubjectProxy();
     }
+
     @Override
     public String request(String url){
         // add pre-process logic if neccessary
         String res = subject.request(url);
         // add post process logic if neccessary
         return "Proxy:" + res;
+    }
+}
+
+public class Client {
+    public static void main(String[] args) {
+        String url = ...;
+        // 不直接使用SubjectImpl去调用，而是通过proxy去调用
+        ISubject proxy = SubjectProxy.getProxy();
+        proxy.request(url);
     }
 }
 ```
@@ -289,6 +275,10 @@ public class ProxyGenerator {
 
 # Cglib动态代理分析
 JDK动态代理必须让SubjectImpl实现某个接口，也就是基于接口代理（interface-based proxies），有局限性。
+
+>注：CGLIB(Code Generation Library)是一个开源项目！是一个强大的，高性能，高质量的Code生成类库，它可以在运行期扩展Java类与实现Java接口。
+>CGLIB是一个强大的高性能的代码生成包。它广泛的被许多AOP的框架使用，例如Spring AOP为他们提供方法的interception（拦截）。CGLIB包的底层是通过使用一个小而快的字节码处理框架ASM，来转换字节码并生成新的类。除了CGLIB包，脚本语言例如Groovy和BeanShell，也是使用ASM来生成java的字节码。当然不鼓励直接使用ASM，因为它要求你必须对JVM内部结构包括class文件的格式和指令集都很熟悉。
+
 如果可以生成一个子类继承SubjectImpl，子类重写父类的方法，将子类注入代理类中，通过子类调用父类的方法来实现代理，这就是Cglib动态代理（subclass-based proxies）。
 使用SpringBoot时，如果Subject实现了某个接口就会使用JDK动态代理，如果实现任何接口就会使用CGLIB动态代理。我们可以在启动类上`@EnableAspectJAutoProxy(proxyTargetClass = true)`进行全局配置。
 Spring框架中的Cglib动态代理，源码在org.springframework.cglib.proxy包下，也有对应的Proxy类和InvocationHandler接口。

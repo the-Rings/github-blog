@@ -27,11 +27,30 @@ tags:
 ### Aspect
 Aspect是对以上三者进行封装的AOP概念.
 
+我们可以在Spring源码中看到对应关键词`org.springframework.aop.config.ConfigBeanDefinitionParser`，这个类主要用来解析xml中定义的`<aop:config>`等标签，以下是部分源码：
+```java
+class ConfigBeanDefinitionParser implements BeanDefinitionParser {
+
+    private static final String ASPECT = "aspect";
+    private static final String EXPRESSION = "expression";
+    private static final String ID = "id";
+    private static final String POINTCUT = "pointcut";
+    private static final String ADVICE_BEAN_NAME = "adviceBeanName";
+    private static final String ADVISOR = "advisor";
+    private static final String ADVICE_REF = "advice-ref";
+    private static final String POINTCUT_REF = "pointcut-ref";
+    private static final String REF = "ref";
+    private static final String BEFORE = "before";
+    // ....
+```
+
 ---
 ## Spring AOP
 AOP是一种理论, Spring AOP是针对Spring框架落地的一种AOP实现.
 
-### 动态代理与CGLIB(基于ASM)
+
+
+### JDK动态代理与CGLIB(基于ASM)
 {% post_link pattern-proxy-and-dynamic '动态代理' %}，这里不在赘述.
 结合Spring AOP来说, 动态代理实现InvocationHandler的类是我们实现横切逻辑的地方, 它是横切逻辑的载体, 作用和Advice是一样的. 这就理解了Advice是什么了.
 动态代理虽好, 但是不能满足所有需求. 因为动态代理机制只能对实现了相应接口的类使用, 如果某个类没有实现任何接口, 就无法使用动态代理机制为其生成相应的动态代理对象.

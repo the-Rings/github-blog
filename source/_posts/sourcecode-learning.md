@@ -13,3 +13,4 @@ obtainFreshBeanFactory() 获得新鲜的BeanFactory
 GenericBeanDefinition 普通BeanDefinition
 getBean()
 doGetBean()
+allowCircularReferences 允许循环依赖
