@@ -122,6 +122,20 @@ categories:
     ProxyMethodInvocation <|.. ReflectiveMethodInvocation
     {% endplantuml %}
 
+## 插入图片
+下载插件
+```shell
+npm install hexo-renderer-marked --save
+```
+在`_config.yml`做如下更改
+```yaml
+post_asset_folder: true
+marked:
+  prependRoot: true
+  postAsset: true
+```
+这样每次`hexo new post "xxx"`后，就会在`_post`下生成一个同名文件夹，将图片放在这个同名文件夹中即可，然后在引用图片的地方加上`![](image_name.jpeg)`即可
+
 ## 特殊语法
 1. 站内文章链接{% post_link file_name "display name" %}
 

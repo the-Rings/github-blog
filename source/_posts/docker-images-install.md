@@ -1,7 +1,7 @@
 ---
 title: 配置安装docker以及镜像
 date: 2022-01-22 16:22:12
-tags:
+categories:
 - Docker
 ---
 
@@ -229,6 +229,9 @@ sudo docker  run --name nacos \
 sudo docker update nacos --restart=always
 # 设置容器的开机启动
 ```
+
+## 安装kafka
+1. 安装zookeepr
 
 
 

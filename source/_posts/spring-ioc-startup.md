@@ -6,4 +6,4 @@ categories:
 - IoC
 ---
 
-[IOC启动流程图](https://www.processon.com/view/63dcfa02392a4b25fec64888)
+![IOC启动流程图](SpringIOC-1.png)
