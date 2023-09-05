@@ -1,6 +1,6 @@
 ---
 title: 如何洞察本质
-date: 2023-04-16 17:02:38
+date: 2022-04-16 17:02:38
 categories:
 - Thought
 ---

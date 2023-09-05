@@ -17,7 +17,6 @@ post_meta:
 local_search:
   enable: true
 
-
 ## 统计站点，文章的访问次数
 busuanzi_count:
   enable: true

@@ -5,39 +5,51 @@ categories:
 - Spring
 ---
 
-Spring Framework’s @Conditional annotation is the core of Autoconfigurations.
-事实上, 自动装配是基于标准的@Configuration类来实现的. @Conditional一系列注解用来限制自动装配的实施. 通常情况下, 自动装配的类使用@ConditionalOnClass和@ConditionalOnMissingBean注解. 这确保了自动装配类的实施, 是在当相关类被找到, 并且没有声明你自己的@Configuration的时候.
+在Spring Boot项目流行之前，Spring团队有一款代码生成器就是Spring Roo项目，几分钟就可以构建一个应用，但是现实情况是，大家对此不买账，后来这个项目就永远停留在了2017年。虽然Spring Roo能够帮助生成各种代码和配置，但是总体的代码数量并没有减少。Spring团队的Josh Long一语道破：如果一个东西可以生成出来，那为什么还要生成它呢？
 
-# 自动装配出现的背景
-想象你在一个超级大公司里, 这个公司里有很多使用纯Spring Framework的项目, 大家的配置文件中有80%都是一样的. 这时, 你想到了是不是可以提取出一个共同的ApplicationContextConfiguration, 因为大家的有很多Bean是一样的.
-```java
-@Configuration
-public class SharedContextConfiguration { // (1)
+Spring Boot在SpringFramework的基础上引入了4个特性，来提高开发效率
+- starter dependency
+- auto configuration
+- actuator
+- CLI
+本次我只谈谈前两项。
 
-    @Bean
-    public Driver neo4jDriver(Neo4jProperties properties, ...) {
-        return GraphDatabase.driver(...);
-    }
+starter dependency(起步依赖)这个名字取得很差，总是让我迷惑，其实应该叫做“依赖分组”。他的目的是要解决依赖管理问题，需要引入什么依赖，版本是什么，互相之间不能有冲突。要解决这个问题根本无需写额外的代码，使用maven就能天然解决，只需要创建一个空项目，然后把同一组依赖(加上版本)放到pom.xml文件中，然后主项目依赖这个空项目即可，等我读懂这些技术以后，我十分失望，因为这是多么的弱智。
 
-}
+auto configuration(自动配置)，它的目的是省去自己动手配置的一模一样的模板配置。框架猜测你会这么配置，如果配置不是你想要的，你就再手动修改就好了。要想我们的配置要在Spring中生效，配置文件的内容要加载到一个对象中，对应一个@Configuration修饰的类。在Spring项目的根路径下，会被自动扫描到，就会加载到容器中。但是现在，它需要在某些条件下才能向Spring容器注入这个Bean，所以这就是构成了自定义配置项的基础。
+
+我们以JdbcTemplateAutoConfiguration为例：
+```Java
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnClass({ DataSource.class, JdbcTemplate.class })
+@ConditionOnSingleCandidate(DataSource.class)
+@AutoConfigureAfter(DataSourceAutoConfiguration.class)
+@EnableConfigurationProperties(JdbcProperties.class)
+@Import({ JdbcTemplateConfiguration.class, NamedParameterJdbcTemplateConfiguration.class })
+public class JdbcTemplateAutoConfiguration {}
 ```
+这个配置类生效的条件是存在DataSource和JdbcTemplate类，且上下文中只能有一个DataSource。此外，这个自动配置需要在DataSourceAutoConfiguration之后再配置（可以用@AutoConfigure、@AutoConfigureAfter和@AutoConfigureOrder来控制配置的顺序）。这个配置类还会同时导入JdbcTemplateConfiguration，NamedParameterJdbcTemplateConfiguration里的配置。
 
-你可以将此SharedConfiguration项目, 打包发布公司maven仓库的一个依赖. 其他项目可以在自己的@Configuration类上再加上一个注解@Import(...Configuration.class)
-```java
-@Configuration
-@Import(SharedConfiguration.class) // (1)
-public class OtherProjectContextConfiguration {
+更直白地说，比如，`@ConditionalOnClass({ DataSource.class, JdbcTemplate.class })`的语义其实是，`IF EXISTS DataSource.class&JdbcTemplate.class DO...`
 
-   // you would specify your project-specific beans here, as normal.
-}
+还有一个很重要的问题，普通配置类需要被扫描到才能生效，可是自动配置类并不在我们项目的扫描路径中，那么我们是如何将它们加载到容器中的呢？
+
+秘密在于`@EnableAutoConfiguration`上的`@Import(AutoConfigurationImportSelector.class)`，其中的AutoConfigurationImportSelector类是ImportSelector的实现，这个接口作用就是根据特定条件决定可以导入哪些配置类。接口中的selectImports()方法返回的就是可以导入的配置的类名(String数组)。
+
+AutoConfigurationImportSelector通过SpringFactoriesLoader来加载`/META-INF/spring.factories`里边的配置列表，所用的key是`org.springframework.boot.autoconfigure.EnableAutoConfiguration`，value是以都好分隔的自动配置类全限定的类名（包含了完整的包名与类名清单）。所以，只要在我们类上增加`@SpringBootApplication`或者`@EnableAutoConfiguration`就会自动加载所有的自动配置类。
 ```
-
-以上方式看起来很好但是却存在一些问题:
-如果SharedConfiguration中配置了某些Bean, 比如Neo4jBean, 在其他项目中是不需要的, 那么我是否可以排除这些Bean呢?
-
-这就引出了@Conditional注解.
+# Auto Configure
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,\
+org.springframework.boot.autoconfigure.aop.AopAutoConfiguration,\
+org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,\
+org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration,\
+// ...
+// 100+ more lines
+```
 
 # 自动装配核心注解@Conditional
+Spring Framework’s @Conditional annotation is the core of Autoconfigurations.
 @Conditional"系列注解"可以用在@Bean Method, @Components或者其他@Configuration注解上. 它们的作用范围都是`@Target({ElementType.TYPE,ElementType.METHOD})`, 比如@ConditionalOnClass, @ConditionalOnBean, @ConditionalOnMissBean等.
 ```java
 @Target({ ElementType.TYPE, ElementType.METHOD })
@@ -79,7 +91,6 @@ public @interface ConditionalOnClass {
 
 附上Condition接口源码:
 ```java
-
 /**
  * A single {@code condition} that must be {@linkplain #matches matched} in order
  * for a component to be registered.
@@ -120,147 +131,6 @@ public interface Condition {
 In short: Even though an ApplicationContextConfiguration comes with certain @Bean definitions, you as the end-user can still somewhat influence if a bean gets created or not.
 {% endblockquote %}
 即使每个ApplicationContextConfiguration都是来自某个@Bean的定义, 但是你最为最终使用者依然拥有对Bean的创建与否的决定权.
-
-
-## 使用@Conditional再次改造
-制造出新的ApplicationContextConfiguration
-```java
-@Configuration
-public class SharedConfiguration {
-    @Bean
-    @Conditional(IsRequiredNeo4jDatabaseCondition.class)
-    public Driver neo4jDriver(Neo4jProperties properties, ...) {
-        return GraphDatabase.driver(...);
-    }
-}
-```
-实现Condition接口:
-```java
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.core.type.AnnotatedTypeMetadata;
-
-public class IsRequiredNeo4jDatabaseCondition implements Condition {
-    @Override
-    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata){
-        return neo4jDriverOnClassPath() && databaseUrlSet(context); // [1]
-    }
-    private boolean databaseUrlSet(ConditioContext context) {
-        return context.getEnvironment().containsPreperty("spring.data.neo4j.uri");
-    }
-    private boolean neo4jDriverOnClassPath() {
-        try {
-            Class.forName("org.neo4j.driver.Driver");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-}
-```
-[1]这里构造了两个条件来实施判断, 一个是检测properties中是否拥有某个配置项, 一个是检测是否引入了neo4jDriver对应的依赖(通过在classpath找寻对应的类是否存在即可).
-> 注意: 真是情况下的Neo4j配置与以上做法略有不同.
-
-那么以上两种match方式对应着两个最重要的Condition:
- - create @Beans depending on specific **available properties**.
- - create @Beans depending on specific **libraries on your classpath**.
-
-至此, 我们会有这样的疑问,
- - Conditionals that create a DataSource for you, because you have set specific properties (think: spring.data.neo4j.uri)? 
- - Or @Conditionals that boot up an embedded Tomcat server for you because you have the Tomcat libraries on your classpath?
-The Answer is YES, that (and not much more) is exactly what Spring Boot is. 
-
-# Spring Boot Autoconfigurations: Three Internal Core Features
-## 定位PropertySources
-Spring Boot获取配置参数有一个顺序, 这个顺序是特殊的:
-{% blockquote Spring Boot docs%}
-1. Default properties (specified by setting SpringApplication.setDefaultProperties).
-2. `@PropertySource` annotations on your @Configuration classes. Please note that such property sources are not added to the Environment until the application context is being refreshed. This is too late to configure certain properties such as logging.* and spring.main.* which are read before refresh begins.
-3. Config data (such as application.properties files)
-4. A RandomValuePropertySource that has properties only in random.*.
-5. OS environment variables.
-6. Java System properties (System.getProperties()).
-7. JNDI attributes from java:comp/env.
-8. ServletContext init parameters.
-9. ServletConfig init parameters.
-10. Properties from SPRING_APPLICATION_JSON (inline JSON embedded in an environment variable or system property).
-11. Command line arguments.
-12. properties attribute on your tests. Available on @SpringBootTest and the test annotations for testing a particular slice of your application.
-13. @TestPropertySource annotations on your tests.
-14. Devtools global settings properties in the $HOME/.config/spring-boot directory when devtools is active.
-{% endblockquote %}
-以上这些就是Spring Boot启动时, 默认读取Property的位置和顺序.
-
-其中, 注解`@PropertySource`需要注意, 通过注解`@PropertySource`来定位配置文件`.properties`
-```java
-@PropertySource(value = "classpath:application.properties", ignoreResourceNotFound = true)
-```
-当你运行SpringBoot启动类的main方法, SpringBoot将会自动按顺序读取这14个PropertySource(低版本的可能是17个, 当前版本是2.5.6), 为的是将这些配置注入到项目中.
-
-> 提示: Spring Boot将配置的值注入bean的属性有两种办法
-> 1. @Value
-> 2. @ConfigurationProperties
-
-
-## Read-in META-INF/spring.factories
-每个SpringBoot项目都有一个共同的依赖, 就是`org.springframework.boot:spring-boot-autoconfigure`, 这个jar包包含了所有自动配置的magic. 其核心就是`META-INF/spring.factories`文件.
-```
-# Auto Configure
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,\
-org.springframework.boot.autoconfigure.aop.AopAutoConfiguration,\
-org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,\
-org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration,\
-// ...
-// 100+ more lines
-```
-截取其中一段如上所示, EnableAutoConfiguration的值, 有100多个. 这些类都是普通的@Configurations并且有些有@Conditionals, Spring Boot读取这些类并对其Condition进行评估执行.
-
-## Enhanced Conditional Support
-@Conditional是一个较底层的注解, 基于此注解, 组合出了很多"增强型"的注解, 比如:
- - @ConditionalOnClass(DataSource.class). The condition is true if the DataSource class is on the classpath.
- - @ConditionalOnMissingClass(DataSource.class). The condition is true if the DataSource class is not on the classpath.
- - @ConditionalOnMissingBean(DataSource.class). The condition is true if the user did not specify a DataSource @Bean in any @Configuration.
- - @ConditionalOnWebApplication. The condition is true if the application is a web application.
- - @ConditionalOnProperty("my.property"). The condition is true if my.property is set.
- - @ConditionalOnResource("classpath:my.properties"). The condition is true if my.properties exists.
- - // e.g.
-大多数情况下, 都是用增强型注解更为方便.
-
-@Conditional增强型的注解大概分为以下几种:
- - Class Conditions
- - Bean Conditions
- - Property Conditions
- - Resource Conditions
- - Web Application Conditions
- - SpEL Expression Conditions
-
-### Class Conditions
-@ConditionalOnClass或者@ConditionalOnMissingClass, 通过判断指定的class在或者不在classpath中来, 判断Bean的创建与否. 
-> **The fact is that annotation metadata is parsed by using ASM.**
-Conditional注解一般有两个参数, `value`和`name`, 你可以通过`value`传真实的class参数, 即使这个类并没有出现在application classpath中.
-
-### Bean Conditions
-Conditional @Conditional that only matches when no beans meeting the specified
-requirements are already contained in the `BeanFactory`.
-
-When placed on a `@Bean` method, the bean class defaults to the return type of
-the factory method:
-```java
-@Configuration
-public class MyAutoConfiguration {
-    @Bean
-    @ConditionalOnMissingBean
-    // @ConditionalOnMissingBean没有传参数, 默认是此method的返回值类型, 同: @ConditionalOnMissingBean(MyService.class)
-    public MyService myService() {
-        ...
-    }
-}
-```
-In the sample above the condition will match if no bean of type {@code MyService} is
-already contained in the {@link BeanFactory}.
-
-#### Property Conditions...等不再讨论
 
 
 ## AutoConfiguration测试
@@ -354,81 +224,6 @@ public class TestAutoConfiguration {
   }
 }
 ```
-从以上例子中可以看出, 当仅仅ApplicationContext仅仅加载MyServiceAutoConfiguration类时, 注入的Bean是`myService`, 当MyServiceAutoConfiguration和UserConfiguration都加载是注入的Bean是`myCustomService`, 从中体现出了@ConditionalOnMissingBean的作用.
+从以上例子中可以看出, 当仅仅ApplicationContext仅仅加载MyServiceAutoConfiguration类时, 注入的Bean是`myService`, 当MyServiceAutoConfiguration和UserConfiguration都加载是注入的Bean是`myCustomService`，因为UserConfiguration加载时，注入了MyService类型的Bean，当从中体现出了@ConditionalOnMissingBean的作用（`IF NOT EXISTS MyService.class Bean DO ...`）
 
 更多关于Autoconfiguration相关Conditional注解的测试可以查看: https://www.baeldung.com/spring-boot-context-runner
-
-# 构建自己的starter
-a custom starter can contain the following:
-
- - The autoconfigure module that contains the auto-configuration code for "acme".
-
- - The starter module that provides a dependency to the autoconfigure module as well as "acme" and any additional dependencies that are typically useful. In a nutshell, adding the starter should provide everything needed to start using that library.
-
-#### Naming
-You should make sure to provide a proper namespace for your starter. Do not start your module names with spring-boot
-#### Configuration keys
-If your starter provides configuration keys, use a unique namespace for them. In particular, do not include your keys in the namespaces that Spring Boot uses (such as server, management, spring, and so on). 
-```java
-import java.time.Duration;
-
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-@ConfigurationProperties("acme")
-public class AcmeProperties {
-
-    /**
-     * Whether to check the location of acme resources.
-     */
-    private boolean checkLocation = true;
-
-    /**
-     * Timeout for establishing a connection to the acme server.
-     */
-    private Duration loginTimeout = Duration.ofSeconds(3);
-
-    public boolean isCheckLocation() {
-        return this.checkLocation;
-    }
-
-    public void setCheckLocation(boolean checkLocation) {
-        this.checkLocation = checkLocation;
-    }
-
-    public Duration getLoginTimeout() {
-        return this.loginTimeout;
-    }
-
-    public void setLoginTimeout(Duration loginTimeout) {
-        this.loginTimeout = loginTimeout;
-    }
-
-}
-```
-Here are some rules we follow internally to make sure descriptions are consistent:
- - Do not start the description by "The" or "A".
- - For boolean types, start the description with "Whether" or "Enable".
- - For collection-based types, start the description with "Comma-separated list"
- - Use java.time.Duration rather than long and describe the default unit if it differs from milliseconds, such as "If a duration suffix is not specified, seconds will be used".
- - Do not provide the default value in the description unless it has to be determined at runtime.
-
-> Make sure to trigger meta-data generation so that IDE assistance is available for your keys as well. You may want to review the generated metadata (META-INF/spring-configuration-metadata.json) to make sure your keys are properly documented. Using your own starter in a compatible IDE is also a good idea to validate that quality of the metadata.
-
-## The "autoconfigure" module
- The `autoconfigure` module contains everything that is necessary to get started with the library. It may also contain configuration key definitions (such as @ConfigurationProperties) and any callback interface that can be used to further customize how the components are initialized.
-
-Spring Boot uses an annotation processor to collect the conditions on auto-configurations in a metadata file (`META-INF/spring-autoconfigure-metadata.properties`). If that file is present, it is used to eagerly filter auto-configurations that do not match, which will improve startup time. It is recommended to add the following dependency in a module that contains auto-configurations:
-```gradle
-dependencies {
-    compileOnly "org.springframework.boot:spring-boot-autoconfigure-processor"
-}
-```
-
-## Starter module
-The starter is really an empty jar. Its only purpose is to provide the necessary dependencies to work with the library. You can think of it as an opinionated view of what is required to get started.
-
-Do not make assumptions about the project in which your starter is added. If the library you are auto-configuring typically requires other starters, mention them as well. Providing a proper set of *default* dependencies may be hard if the number of optional dependencies is high, as you should avoid including dependencies that are unnecessary for a typical usage of the library. In other words, you should not include optional dependencies.
-
-> NOTE: Either way, your starter must reference the core Spring Boot starter (spring-boot-starter) directly or indirectly (there is no need to add it if your starter relies on another starter). If a project is created with only your custom starter, Spring Boot’s core features will be honoured by the presence of the core starter.
-
-至此, 创建自己的starter并没有完成, 以上只是记录一下spring boot相关的重要的话, 接下来将会在`E:\SpringProjects\PracticeProjects\spring-boot-practice-auto-configuration`中先进行实战, 对照着`E:\SpringProjects\PracticeProjects\spring-boot-master-auto-configuration`项目的git log一步一步来. 但是要替换`spring-boot-master-auto-configuration`中的`hornetq`为`redis`, 所以先进行redis的学习.
